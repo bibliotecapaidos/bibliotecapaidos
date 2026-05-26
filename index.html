@@ -34,7 +34,7 @@
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px; }
-        .search-box { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; margin-bottom: 20px; font-size: 15px; }
+        .search-box { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; margin-bottom: 20px; font-size: 15px; font-weight: 500; background-color: #ebf8ff; }
         .list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e2e8f0; background: white; margin-bottom: 8px; border-radius: 6px; }
         .list-item img { width: 45px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 15px; }
         .item-info { flex-grow: 1; }
@@ -76,17 +76,17 @@
 
     <div class="sync-banner" id="initialSyncBanner">
         <div>
-            <strong>🔄 Configurar la nova base de dades:</strong> Prem aquest botó verd per abocar la llista actual a les 3 noves pestanyes del Google Sheets.
+            <strong>🔄 Inicialitzar Base de Dades:</strong> Si el teu Google Sheets està totalment buit, prem aquest botó per deixar creades les columnes netes.
         </div>
         <button class="btn btn-success" onclick="executarSincronitzacioInicial()">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Activar 3 Pestanyes
+            <i class="fa-solid fa-cloud-arrow-up"></i> Activar 3 Pestanyes Netes
         </button>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('llibres')"><i class="fa-solid fa-book"></i> Llibres</button>
-        <button class="tab-btn" onclick="switchTab('alumnes')"><i class="fa-solid fa-graduation-cap"></i> Alumnes</button>
-        <button class="tab-btn" onclick="switchTab('prestecs')"><i class="fa-solid fa-handshake"></i> Préstecs</button>
+        <button class="tab-btn active" id="btn-tab-llibres" onclick="switchTab('llibres')"><i class="fa-solid fa-book"></i> Llibres</button>
+        <button class="tab-btn" id="btn-tab-alumnes" onclick="switchTab('alumnes')"><i class="fa-solid fa-graduation-cap"></i> Alumnes</button>
+        <button class="tab-btn" id="btn-tab-prestecs" onclick="switchTab('prestecs')"><i class="fa-solid fa-handshake"></i> Préstecs</button>
     </div>
 
     <div class="grid">
@@ -96,19 +96,19 @@
                 <input type="hidden" id="lib-index" value="-1">
                 <div class="form-group">
                     <label>Títol del llibre</label>
-                    <input type="text" id="lib-titol" placeholder="Ex: Ninja Kid 1">
+                    <input type="text" id="lib-titol" placeholder="Ex: Shrek">
                 </div>
                 <div class="form-group">
                     <label>Autor</label>
-                    <input type="text" id="lib-autor" placeholder="Ex: Anh Do">
+                    <input type="text" id="lib-autor" placeholder="Ex: Ellen Weiss">
                 </div>
                 <div class="form-group">
                     <label>ISBN</label>
-                    <input type="text" id="lib-isbn" placeholder="Ex: 978-8427225749">
+                    <input type="text" id="lib-isbn" placeholder="Ex: 978-8420638546">
                 </div>
                 <div class="form-group">
-                    <label>Enllaç o ID d'Imatge Cloudinary</label>
-                    <input type="text" id="lib-imatge" placeholder="Enganxa el link complet de Cloudinary o l'ID">
+                    <label>ID Imatge Cloudinary</label>
+                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge de la portada">
                 </div>
                 <div class="form-group">
                     <label>Unitats Disponibles</label>
@@ -122,12 +122,12 @@
                 <h3 id="titol-form-alumne">Afegir Nou Alumne</h3><br>
                 <input type="hidden" id="alu-index" value="-1">
                 <div class="form-group">
-                    <label>Nom Complet de l'Alumne</label>
+                    <label>Nom Complet (i cognoms)</label>
                     <input type="text" id="alu-nom" placeholder="Ex: Pol Alegre Berna">
                 </div>
                 <div class="form-group">
                     <label>Curs / Classe</label>
-                    <input type="text" id="alu-curs" placeholder="Ex: 1r A">
+                    <input type="text" id="alu-curs" placeholder="Ex: 5è A">
                 </div>
                 <button class="btn btn-primary" onclick="guardarAlumne()"><i class="fa-solid fa-user-plus"></i> <span id="btn-text-alumne">Desar Alumne i Enviar</span></button>
                 <button class="btn btn-danger" id="btn-cancelar-alumne" style="display:none; margin-top:5px;" onclick="cancelarEdicioAlumne()">Cancelar Edició</button>
@@ -148,33 +148,18 @@
         </div>
 
         <div class="card">
-            <input type="text" id="cercador" class="search-box" placeholder="Cerca en temps real..." oninput="filtrarLlista()">
+            <input type="text" id="cercador" class="search-box" placeholder="🔍 Cerca per títol, autor o ISBN..." oninput="filtrarLlista()">
             <div id="llistat-dades"></div>
         </div>
     </div>
 
     <script>
-        // ADREÇA DE L'SCRIPT ACTUALITZADA AMB LA TEVA NOVA INSTAL·LACIÓ
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwL5VtkpHfT5aCQOC-lflkT3GokjBErwzGB9OQtQ0FUtv38tc5CdS0bOPNyNoMfemDJ/exec";
 
+        // ELIMINATS TOTS ELS LLIBRES I ALUMNES DE MOSTRA (ARA ESTÀ BUIT COM VOLIES)
         let db = {
-            llibres: [
-                {"t":"Ninja Kid 1. De pringat a ninja.","a":"Anh Do","i":"978-8427225749","c":"Ninja_Kid_sbenr3","q":1},
-                {"t":"¡Yotsuba! 2","a":"Kiyohiko Azuma","i":"978-84-126260-1-8","c":"Yotsuba_2_y3qicg","q":1},
-                {"t":"Edens Zero 1","a":"Hiro Mashima","i":"978-84-679-3413-7","c":"Edens_Zero_1","q":1},
-                {"t":"La terrible Adèle ¡No me gusta el amor! (Vol. 5)","a":"Mr. Tan","i":"978-84-18401-44-2","c":"La_terrible_Adèle_5","q":1},
-                {"t":"La terrible Adèle ¡Que se aparten los feos! (Vol. 2)","a":"Mr. Tan","i":"978-84-18401-16-9","c":"La_terrible_Adèle_2","q":1},
-                {"t":"Geronimo Stilton: Las aventuras de Ulises","a":"Elisabetta Dami","i":"978-84-08-16167-7","c":"Les_aventures_d_Ulisses_cfpahb","q":1},
-                {"t":"El món genial del Tom Gates","a":"Liz Pichon","i":"978-8499061306","c":"Screenshot_2026-05-18_09.44.26_mkvzdl","q":2},
-                {"t":"Isadora Moon 8: Fiesta de pijamas","a":"Harriet Muncaster","i":"978-8420433981","c":"Screenshot_2026-05-19_12.43.38_nuh3mf","q":1},
-                {"t":"Isadora Moon i el Festival de la Neu","a":"Harriet Muncaster","i":"978-8419366238","c":"Screenshot_2026-05-19_12.45.31_s","q":1}
-            ],
-            alumnes: [
-                {"n":"Pol Alegre Berna","c":"1r A"},
-                {"n":"Nico Antolín Vallès","c":"1r A"},
-                {"n":"Bel Basagaña Romero","c":"1r A"},
-                {"n":"Àlex Calveras Canut","c":"1r A"}
-            ],
+            llibres: [],
+            alumnes: [],
             prestecs: []
         };
 
@@ -189,10 +174,19 @@
         function switchTab(tab) {
             currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            if(event) event.target.classList.add('active');
+            document.getElementById('btn-tab-' + tab).classList.add('active');
+            
             document.getElementById('form-llibres').style.display = tab === 'llibres' ? 'block' : 'none';
             document.getElementById('form-alumnes').style.display = tab === 'alumnes' ? 'block' : 'none';
             document.getElementById('form-prestecs').style.display = tab === 'prestecs' ? 'block' : 'none';
+            
+            // Canviar el text del cercador segons la pestanya on som
+            const cercador = document.getElementById('cercador');
+            if(tab === 'llibres') cercador.placeholder = "🔍 Cerca llibre per títol, autor o ISBN...";
+            if(tab === 'alumnes') cercador.placeholder = "🔍 Cerca alumne per nom o cognoms...";
+            if(tab === 'prestecs') cercador.placeholder = "🔍 Cerca préstec per alumne o llibre...";
+            
+            cercador.value = ''; // Netejar el filtre al canviar de pestanya
             actualitzarInterficie();
         }
 
@@ -212,15 +206,27 @@
             const query = document.getElementById('cercador').value.toLowerCase();
 
             if (currentTab === 'llibres') {
-                db.llibres.filter(l => l.t.toLowerCase().includes(query) || l.a.toLowerCase().includes(query)).forEach((l, idx) => {
+                // BUSCADOR DE LLIBRES: Cerca per Títol, Autor o ISBN
+                db.llibres.filter(l => 
+                    (l.t && l.t.toLowerCase().includes(query)) || 
+                    (l.a && l.a.toLowerCase().includes(query)) || 
+                    (l.i && l.i.toLowerCase().includes(query))
+                ).forEach((l, idx) => {
                     llistat.innerHTML += `<div class="list-item"><img src="${obtenirRutaImatge(l.c)}" onerror="this.src='https://placehold.co/45x60?text=No+Img'"><div class="item-info"><strong>${l.t}</strong><br><small>${l.a} | ISBN: ${l.i}</small><br><span class="status-badge status-ok">Exemplars: ${l.q || 1}</span></div><div class="actions"><button class="btn btn-warning" onclick="carregarLlibrePerEditar(${idx})"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger" onclick="esborrarElement('llibres', ${idx})"><i class="fa-solid fa-trash"></i></button></div></div>`;
                 });
             } else if (currentTab === 'alumnes') {
-                db.alumnes.filter(a => a.n.toLowerCase().includes(query)).forEach((a, idx) => {
+                // BUSCADOR D'ALUMNES: Cerca per Nom o Cognoms
+                db.alumnes.filter(a => 
+                    (a.n && a.n.toLowerCase().includes(query))
+                ).forEach((a, idx) => {
                     llistat.innerHTML += `<div class="list-item"><div class="item-info"><strong>${a.n}</strong><br><small>Curs: ${a.c}</small></div><div class="actions"><button class="btn btn-warning" onclick="carregarAlumnePerEditar(${idx})"><i class="fa-solid fa-pen"></i></button><button class="btn btn-danger" onclick="esborrarElement('alumnes', ${idx})"><i class="fa-solid fa-trash"></i></button></div></div>`;
                 });
             } else if (currentTab === 'prestecs') {
-                db.prestecs.filter(p => p.a.toLowerCase().includes(query) || p.l.toLowerCase().includes(query)).forEach((p, idx) => {
+                // BUSCADOR DE PRÉSTECS: Cerca per Alumne o per Llibre
+                db.prestecs.filter(p => 
+                    (p.a && p.a.toLowerCase().includes(query)) || 
+                    (p.l && p.l.toLowerCase().includes(query))
+                ).forEach((p, idx) => {
                     llistat.innerHTML += `<div class="list-item"><div class="item-info"><strong>🤝 Llibre: ${p.l}</strong><br><small>Alumne: ${p.a} | Data: ${p.d}</small></div><button class="btn btn-danger" onclick="esborrarElement('prestecs', ${idx})"><i class="fa-solid fa-arrow-rotate-left"></i> Retornar</button></div>`;
                 });
             }
@@ -241,46 +247,70 @@
         }
 
         function cancelarEdicioLlibre() {
-            document.getElementById('lib-index').value = "-1"; document.getElementById('lib-titol').value = ''; document.getElementById('lib-autor').value = ''; document.getElementById('lib-isbn').value = ''; document.getElementById('lib-imatge').value = ''; document.getElementById('lib-quantitat').value = 1;
-            document.getElementById('titol-form-llibre').innerText = "Afegir Nou Llibre"; document.getElementById('btn-text-llibre').innerText = "Desar Llibre i Enviar"; document.getElementById('btn-cancelar-llibre').style.display = "none";
+            document.getElementById('lib-index').value = "-1"; 
+            document.getElementById('lib-titol').value = ''; 
+            document.getElementById('lib-autor').value = ''; 
+            document.getElementById('lib-isbn').value = ''; 
+            document.getElementById('lib-imatge').value = ''; 
+            document.getElementById('lib-quantitat').value = 1;
+            document.getElementById('titol-form-llibre').innerText = "Afegir Nou Llibre"; 
+            document.getElementById('btn-text-llibre').innerText = "Desar Llibre i Enviar"; 
+            document.getElementById('btn-cancelar-llibre').style.display = "none";
         }
 
         function guardarLlibre() {
             const idx = parseInt(document.getElementById('lib-index').value);
             const llibreData = { t: document.getElementById('lib-titol').value, a: document.getElementById('lib-autor').value, i: document.getElementById('lib-isbn').value, c: document.getElementById('lib-imatge').value.trim(), q: parseInt(document.getElementById('lib-quantitat').value) || 1 };
             if(!llibreData.t) return alert("El títol és obligatori");
-            if(idx === -1) { db.llibres.push(llibreData); } else { db.llibres[idx] = llibreData; cancelarEdicioLlibre(); }
-            actualitzarInterficie(); pujarADrive({ llibres: db.llibres });
+            if(idx === -1) { db.llibres.push(llibreData); } else { db.llibres[idx] = llibreData; }
+            
+            // NETEJAR EL FORMULARI AUTOMÀTICAMENT DESPRÉS D'ENVIAR
+            cancelarEdicioLlibre();
+            
+            actualitzarInterficie(); 
+            pujarADrive({ llibres: db.llibres });
         }
 
         function carregarAlumnePerEditar(idx) {
             const a = db.alumnes[idx];
-            document.getElementById('alu-index').value = idx; document.getElementById('alu-nom').value = a.n; document.getElementById('alu-curs').value = a.c;
-            document.getElementById('titol-form-alumne').innerText = "Modificar Alumne"; document.getElementById('btn-text-alumne').innerText = "Guardar Canvis"; document.getElementById('btn-cancelar-alumne').style.display = "inline-block";
+            document.getElementById('alu-index').value = idx; 
+            document.getElementById('alu-nom').value = a.n; 
+            document.getElementById('alu-curs').value = a.c;
+            document.getElementById('titol-form-alumne').innerText = "Modificar Alumne"; 
+            document.getElementById('btn-text-alumne').innerText = "Guardar Canvis"; 
+            document.getElementById('btn-cancelar-alumne').style.display = "inline-block";
         }
 
         function cancelarEdicioAlumne() {
-            document.getElementById('alu-index').value = "-1"; document.getElementById('alu-nom').value = ''; document.getElementById('alu-curs').value = '';
-            document.getElementById('titol-form-alumne').innerText = "Afegir Nou Alumne"; document.getElementById('btn-text-alumne').innerText = "Desar Alumne i Enviar"; document.getElementById('btn-cancelar-alumne').style.display = "none";
+            document.getElementById('alu-index').value = "-1"; 
+            document.getElementById('alu-nom').value = ''; 
+            document.getElementById('alu-curs').value = '';
+            document.getElementById('titol-form-alumne').innerText = "Afegir Nou Alumne"; 
+            document.getElementById('btn-text-alumne').innerText = "Desar Alumne i Enviar"; 
+            document.getElementById('btn-cancelar-alumne').style.display = "none";
         }
 
         function guardarAlumne() {
             const idx = parseInt(document.getElementById('alu-index').value);
             const alumneData = { n: document.getElementById('alu-nom').value, c: document.getElementById('alu-curs').value };
             if(!alumneData.n) return alert("El nom és obligatori");
-            if(idx === -1) { db.alumnes.push(alumneData); } else { db.alumnes[idx] = alumneData; cancelarEdicioAlumne(); }
-            actualitzarInterficie(); pujarADrive({ alumnes: db.alumnes });
+            if(idx === -1) { db.alumnes.push(alumneData); } else { db.alumnes[idx] = alumneData; }
+            
+            // NETEJAR EL FORMULARI AUTOMÀTICAMENT DESPRÉS D'ENVIAR
+            cancelarEdicioAlumne();
+            
+            actualitzarInterficie(); 
+            pujarADrive({ alumnes: db.alumnes });
         }
 
-        function guardarCampBase(seccio, dades) { let f = {}; f[seccio] = dades; pujarADrive(f); }
-
-        function guardarCampBase(seccio, dades) { let f = {}; f[seccio] = dades; pujarADrive(f); }
-
         function guardarPrestec() {
-            const alumneSel = document.getElementById('pres-alumne').value; const llibreSel = document.getElementById('pres-llibre').value;
+            const alumneSel = document.getElementById('pres-alumne').value; 
+            const llibreSel = document.getElementById('pres-llibre').value;
             if(!alumneSel || !llibreSel) return alert("Falta seleccionar alumne o llibre");
             const nouPrestec = { a: alumneSel, l: llibreSel, d: new Date().toLocaleDateString('ca-ES') };
-            db.prestecs.push(nouPrestec); actualitzarInterficie(); pujarADrive({ prestecs: db.prestecs });
+            db.prestecs.push(nouPrestec); 
+            actualitzarInterficie(); 
+            pujarADrive({ prestecs: db.prestecs });
             alert("Préstec registrat amb èxit!");
         }
 
@@ -294,9 +324,9 @@
         }
 
         function executarSincronitzacioInicial() {
-            if(confirm("Vols bolcar les dades a l'estructura nova de 3 pestanyes del Sheets?")) {
+            if(confirm("Vols inicialitzar la base de dades buida al teu Sheets?")) {
                 fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(db) }).then(() => {
-                    alert("🎉 Base de dades inicial distribuïda amb èxit!");
+                    alert("🎉 Columnes de treball creades al teu full de càlcul!");
                     document.getElementById('initialSyncBanner').style.display = 'none';
                 });
             }
@@ -308,13 +338,17 @@
                 if(data.llibres && data.llibres.length > 0) { db.llibres = data.llibres; c = true; }
                 if(data.alumnes && data.alumnes.length > 0) { db.alumnes = data.alumnes; c = true; }
                 if(data.prestecs && data.prestecs.length > 0) { db.prestecs = data.prestecs; c = true; }
-                if(c) { document.getElementById('initialSyncBanner').style.display = 'none'; actualitzarInterficie(); }
+                if(c) { document.getElementById('initialSyncBanner').style.display = 'none'; }
+                actualitzarInterficie();
             });
         }
 
         function actualitzarDesplegablesPréstecs() {
-            const pAlu = document.getElementById('pres-alumne'); const pLlib = document.getElementById('pres-llibre');
-            if(!pAlu || !pLlib) return; pAlu.innerHTML = ''; pLlib.innerHTML = '';
+            const pAlu = document.getElementById('pres-alumne'); 
+            const pLlib = document.getElementById('pres-llibre');
+            if(!pAlu || !pLlib) return; 
+            pAlu.innerHTML = ''; 
+            pLlib.innerHTML = '';
             db.alumnes.forEach(a => pAlu.innerHTML += `<option>${a.n}</option>`);
             db.llibres.forEach(l => pLlib.innerHTML += `<option>${l.t}</option>`);
         }
