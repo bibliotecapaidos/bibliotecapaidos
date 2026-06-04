@@ -17,8 +17,15 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: var(--background); color: var(--text); padding: 20px; }
-        header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         
+        /* BARRA DE MANTENIMENT I CONTROL */
+        .maint-bar { background: #feebc8; border: 1px solid #fbd38d; color: #c05621; padding: 12px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; font-size: 0.95rem; }
+        .maint-buttons { display: flex; gap: 10px; }
+        .btn-maint { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+        .btn-maint-blue { background: #3182ce; } .btn-maint-blue:hover { background: #2b6cb0; }
+        .btn-maint-green { background: #38a169; } .btn-maint-green:hover { background: #2f855a; }
+
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); display: flex; align-items: center; gap: 15px; }
         .stat-card.alumnes { border-top-color: var(--warning); }
@@ -70,8 +77,6 @@
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #edf2f7; color: var(--primary); }
         .selected-badge { display: inline-block; background: #edf2f7; border: 1px solid #cbd5e0; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; font-weight: 600; color: var(--primary); width: 100%; }
-        
-        .loading-banner { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -81,7 +86,13 @@
         <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
     </header>
 
-    <div id="loading-status" class="loading-banner">🔄 Sincronitzant dades en temps real amb Google Sheets...</div>
+    <div class="maint-bar">
+        <span id="loading-status">🔄 Sincronitzant dades amb Google Sheets...</span>
+        <div class="maint-buttons">
+            <button class="btn-maint btn-maint-blue" onclick="sincronitzarAmbServidor()"><i class="fa-solid fa-rotate"></i> Forçar Sincronització</button>
+            <button class="btn-maint btn-maint-green" onclick="executarSincronitzacioInicial()"><i class="fa-solid fa-cloud-arrow-up"></i> Inicialitzar Activar 3 Pestanyes</button>
+        </div>
+    </div>
 
     <div class="stats-grid">
         <div class="stat-card">
@@ -229,28 +240,43 @@
         }
 
         function sincronitzarAmbServidor() {
-            document.getElementById('loading-status').style.display = 'block';
-            document.getElementById('loading-status').innerText = '🔄 Sincronitzant dades en temps real amb Google Sheets...';
+            const status = document.getElementById('loading-status');
+            status.innerHTML = '🔄 Sincronitzant dades en temps real amb Google Sheets...';
+            status.style.color = '#c05621';
             
             fetch(`${SCRIPT_URL}?action=read`)
                 .then(res => res.json())
                 .then(data => {
                     if(data) {
-                        // Correcció directa: Mapegem el JSON tal com arriba del Sheets per assegurar compatibilitat amb lletres soltes o indexs estructurats
                         db.libres = data.libres || [];
                         db.alumnos = data.alumnos || [];
                         db.prestecs = data.prestecs || [];
                         desarDadesLocals();
                         renderTot();
-                        document.getElementById('loading-status').style.display = 'none';
+                        status.innerHTML = '✅ Connexió en línia establerta amb Google Sheets';
+                        status.style.color = '#2f855a';
                     }
                 })
                 .catch(err => {
                     console.error("Error en connectar amb el servidor:", err);
-                    document.getElementById('loading-status').innerText = '⚠️ Error en connectar amb Google Sheets. Mostrant dades locals offline.';
-                    document.getElementById('loading-status').style.background = '#fff5f5';
-                    document.getElementById('loading-status').style.color = '#c53030';
+                    status.innerHTML = '⚠️ Error en connectar amb Google Sheets. Mostrant dades locals offline.';
+                    status.style.color = '#c53030';
                 });
+        }
+
+        function executarSincronitzacioInicial() {
+            if (confirm("Vols forçar el llançament de la inicialització estructurada cap al teu Google Sheets?")) {
+                document.getElementById('loading-status').innerText = '🚀 Enviant senyal d\'inicialització...';
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'setup' })
+                }).then(() => {
+                    alert("Senyal enviat. Esperant resposta del Sheets...");
+                    setTimeout(sincronitzarAmbServidor, 1500);
+                });
+            }
         }
 
         function enviarServidor(accio, tipus, dades) {
@@ -265,7 +291,6 @@
         }
 
         function actualitzarComptadors() {
-            // Comprovació de claus de lletra: 'q' per quantitat
             let totalLlibres = db.libres.reduce((acc, l) => {
                 let quantitat = l.q !== undefined ? l.q : (l.quantitat !== undefined ? l.quantitat : 1);
                 return acc + parseInt(quantitat || 1);
@@ -274,10 +299,7 @@
             document.getElementById('stat-libros').innerText = totalLlibres;
             document.getElementById('stat-alumnos').innerText = db.alumnos.length;
             
-            let actius = db.prestecs.filter(p => {
-                let fi = p.fi !== undefined ? p.fi : p.fi;
-                return !fi;
-            }).length;
+            let actius = db.prestecs.filter(p => !p.fi).length;
             document.getElementById('stat-prestecs').innerText = actius;
         }
 
@@ -302,7 +324,6 @@
             
             let llibresAmbIndex = db.libres.map((l, i) => ({...l, originalIndex: i}));
             
-            // Suport per llegir tant lletres soltes de columnes estructurades directes (.t) com el text llarg
             llibresAmbIndex.sort((a, b) => {
                 let titolA = a.t || a.titol || "";
                 let titolB = b.t || b.titol || "";
@@ -340,12 +361,6 @@
                     llista.appendChild(row);
                 }
             });
-            
-            if(llista.innerHTML === '' && db.libres.length > 0) {
-                llista.innerHTML = '<p style="text-align:center; color: gray; padding: 20px;">Cap llibre coincideix amb la cerca.</p>';
-            } else if (db.libres.length === 0) {
-                llista.innerHTML = '<p style="text-align:center; color: gray; padding: 20px;">Carregant o no hi ha llibres al Sheets...</p>';
-            }
         }
 
         function guardarLibro() {
