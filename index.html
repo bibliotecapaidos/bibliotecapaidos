@@ -70,6 +70,8 @@
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #edf2f7; color: var(--primary); }
         .selected-badge { display: inline-block; background: #edf2f7; border: 1px solid #cbd5e0; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; font-weight: 600; color: var(--primary); width: 100%; }
+        
+        .loading-banner { background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; padding: 10px; text-align: center; font-weight: bold; border-radius: 8px; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -78,6 +80,8 @@
         <h1>Sistema de Gestió Biblioteca Escola Paidos</h1>
         <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
     </header>
+
+    <div id="loading-status" class="loading-banner">🔄 Sincronitzant dades en temps real amb Google Sheets...</div>
 
     <div class="stats-grid">
         <div class="stat-card">
@@ -119,7 +123,7 @@
                 </div>
                 <div class="form-group">
                     <label>ID Imatge Cloudinary (Opcional)</label>
-                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge de la portada">
+                    <input type="text" id="lib-imatge" placeholder="Codi o URL de la imatge">
                 </div>
                 <div class="form-group">
                     <label>Unitats Disponibles</label>
@@ -225,18 +229,28 @@
         }
 
         function sincronitzarAmbServidor() {
+            document.getElementById('loading-status').style.display = 'block';
+            document.getElementById('loading-status').innerText = '🔄 Sincronitzant dades en temps real amb Google Sheets...';
+            
             fetch(`${SCRIPT_URL}?action=read`)
                 .then(res => res.json())
                 .then(data => {
                     if(data) {
+                        // Correcció directa: Mapegem el JSON tal com arriba del Sheets per assegurar compatibilitat amb lletres soltes o indexs estructurats
                         db.libres = data.libres || [];
                         db.alumnos = data.alumnos || [];
                         db.prestecs = data.prestecs || [];
                         desarDadesLocals();
                         renderTot();
+                        document.getElementById('loading-status').style.display = 'none';
                     }
                 })
-                .catch(err => console.error("Error en connectar amb el servidor:", err));
+                .catch(err => {
+                    console.error("Error en connectar amb el servidor:", err);
+                    document.getElementById('loading-status').innerText = '⚠️ Error en connectar amb Google Sheets. Mostrant dades locals offline.';
+                    document.getElementById('loading-status').style.background = '#fff5f5';
+                    document.getElementById('loading-status').style.color = '#c53030';
+                });
         }
 
         function enviarServidor(accio, tipus, dades) {
@@ -246,14 +260,25 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: accio, type: tipus, data: dades })
             }).then(() => {
-                setTimeout(sincronitzarAmbServidor, 800);
+                setTimeout(sincronitzarAmbServidor, 1000);
             });
         }
 
         function actualitzarComptadors() {
-            document.getElementById('stat-libros').innerText = db.libres.reduce((acc, l) => acc + parseInt(l.q || 1), 0);
+            // Comprovació de claus de lletra: 'q' per quantitat
+            let totalLlibres = db.libres.reduce((acc, l) => {
+                let quantitat = l.q !== undefined ? l.q : (l.quantitat !== undefined ? l.quantitat : 1);
+                return acc + parseInt(quantitat || 1);
+            }, 0);
+            
+            document.getElementById('stat-libros').innerText = totalLlibres;
             document.getElementById('stat-alumnos').innerText = db.alumnos.length;
-            document.getElementById('stat-prestecs').innerText = db.prestecs.filter(p => !p.fi).length;
+            
+            let actius = db.prestecs.filter(p => {
+                let fi = p.fi !== undefined ? p.fi : p.fi;
+                return !fi;
+            }).length;
+            document.getElementById('stat-prestecs').innerText = actius;
         }
 
         function switchTab(tab) {
@@ -276,27 +301,35 @@
             llista.innerHTML = '';
             
             let llibresAmbIndex = db.libres.map((l, i) => ({...l, originalIndex: i}));
-            llibresAmbIndex.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
+            
+            // Suport per llegir tant lletres soltes de columnes estructurades directes (.t) com el text llarg
+            llibresAmbIndex.sort((a, b) => {
+                let titolA = a.t || a.titol || "";
+                let titolB = b.t || b.titol || "";
+                return titolA.localeCompare(titolB);
+            });
 
             llibresAmbIndex.forEach(l => {
-                const titol = l.t || '';
-                const autor = l.a || '';
-                const isbn = l.i || '';
+                const titol = l.t || l.titol || '';
+                const autor = l.a || l.autor || '';
+                const isbn = l.i || l.isbn || '';
+                const imatge = l.c || l.imatge || '';
+                const quantitat = l.q !== undefined ? l.q : (l.quantitat !== undefined ? l.quantitat : 1);
                 
                 if(titol.toLowerCase().includes(cerca) || autor.toLowerCase().includes(cerca) || isbn.toLowerCase().includes(cerca)) {
                     const row = document.createElement('div');
                     row.className = 'item-row disponible';
                     
-                    let imgSrc = l.c ? (l.c.startsWith('http') ? l.c : `https://res.cloudinary.com/id/image/upload/${l.c}`) : '';
-                    let imgHtml = imgSrc ? `<img src="${imgSrc}" class="book-img" onerror="this.style.display='none'">` : '<div class="book-img" style="display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#a0aec0;">No Img</div>';
+                    let imgSrc = imatge ? (imatge.startsWith('http') ? imatge : `https://res.cloudinary.com/id/image/upload/${imatge}`) : '';
+                    let imgHtml = imgSrc ? `<img src="${imgSrc}" class="book-img" onerror="this.style.display='none'">` : '<div class="book-img" style="display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#a0aec0;text-align:center;">No Img</div>';
 
                     row.innerHTML = `
                         <div class="item-info">
                             ${imgHtml}
                             <div class="item-text">
                                 <h4>${titol}</h4>
-                                <p>${autor} | ISBN: ${isbn}</p>
-                                <p><span style="background:#c6f6d5;color:#22543d;padding:2px 6px;border-radius:4px;font-size:0.8rem;font-weight:bold;">Exemplars: ${l.q || 1}</span></p>
+                                <p>${autor} ${isbn ? '| ISBN: ' + isbn : ''}</p>
+                                <p><span style="background:#c6f6d5;color:#22543d;padding:2px 6px;border-radius:4px;font-size:0.8rem;font-weight:bold;">Exemplars: ${quantitat}</span></p>
                             </div>
                         </div>
                         <div class="item-actions">
@@ -307,6 +340,12 @@
                     llista.appendChild(row);
                 }
             });
+            
+            if(llista.innerHTML === '' && db.libres.length > 0) {
+                llista.innerHTML = '<p style="text-align:center; color: gray; padding: 20px;">Cap llibre coincideix amb la cerca.</p>';
+            } else if (db.libres.length === 0) {
+                llista.innerHTML = '<p style="text-align:center; color: gray; padding: 20px;">Carregant o no hi ha llibres al Sheets...</p>';
+            }
         }
 
         function guardarLibro() {
@@ -335,11 +374,11 @@
         function editarLibro(idx) {
             const l = db.libres[idx];
             document.getElementById('lib-index').value = idx;
-            document.getElementById('lib-titol').value = l.t || '';
-            document.getElementById('lib-autor').value = l.a || '';
-            document.getElementById('lib-isbn').value = l.i || '';
-            document.getElementById('lib-imatge').value = l.c || '';
-            document.getElementById('lib-quantitat').value = l.q || 1;
+            document.getElementById('lib-titol').value = l.t || l.titol || '';
+            document.getElementById('lib-autor').value = l.a || l.autor || '';
+            document.getElementById('lib-isbn').value = l.i || l.isbn || '';
+            document.getElementById('lib-imatge').value = l.c || l.imatge || '';
+            document.getElementById('lib-quantitat').value = l.q !== undefined ? l.q : (l.quantitat !== undefined ? l.quantitat : 1);
             document.getElementById('titolo-form-libres').innerText = "Modificar Llibre";
             document.getElementById('btn-cancel-lib').style.display = 'block';
         }
@@ -370,11 +409,15 @@
             llista.innerHTML = '';
             
             let alumnesAmbIndex = db.alumnos.map((a, i) => ({...a, originalIndex: i}));
-            alumnesAmbIndex.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
+            alumnesAmbIndex.sort((a, b) => {
+                let nomA = a.n || a.nom || "";
+                let nomB = b.n || b.nom || "";
+                return nomA.localeCompare(nomB);
+            });
 
             alumnesAmbIndex.forEach(a => {
-                const nom = a.n || '';
-                const curs = a.c || '';
+                const nom = a.n || a.nom || '';
+                const curs = a.c || a.curs || '';
                 if(nom.toLowerCase().includes(cerca) || curs.toLowerCase().includes(cerca)) {
                     const row = document.createElement('div');
                     row.className = 'item-row disponible';
@@ -418,8 +461,8 @@
         function editarAlumno(idx) {
             const a = db.alumnos[idx];
             document.getElementById('alu-index').value = idx;
-            document.getElementById('alu-nom').value = a.n || '';
-            document.getElementById('alu-curs').value = a.c || '';
+            document.getElementById('alu-nom').value = a.n || a.nom || '';
+            document.getElementById('alu-curs').value = a.c || a.curs || '';
             document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne";
             document.getElementById('btn-cancel-alu').style.display = 'block';
         }
@@ -441,14 +484,17 @@
             }
         }
 
-        /* LÒGICA DE CERCA PREDICTIVA PER ALS PRÉSTECS */
         function filtrarSuggerimentsAlumne() {
             const text = document.getElementById('prestec-alumne-search').value.toLowerCase().trim();
             const div = document.getElementById('suggeriments-alumne');
             if(!text) { div.style.display = 'none'; return; }
             div.innerHTML = '';
             
-            let filtrats = db.alumnos.map((a, i) => ({...a, originalIndex: i})).filter(a => (a.n||'').toLowerCase().includes(text) || (a.c && a.c.toLowerCase().includes(text)));
+            let filtrats = db.alumnos.map((a, i) => ({...a, originalIndex: i})).filter(a => {
+                let nom = a.n || a.nom || '';
+                let curs = a.c || a.curs || '';
+                return nom.toLowerCase().includes(text) || curs.toLowerCase().includes(text);
+            });
             
             if(filtrats.length === 0) {
                 div.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">Cap alumne trobat</div>`;
@@ -456,8 +502,10 @@
                 filtrats.forEach(a => {
                     const d = document.createElement('div');
                     d.className = 'suggestion-item';
-                    d.innerText = `${a.n} (${a.c || ''})`;
-                    d.onclick = function() { triarAlumnePrestec(a.originalIndex, a.n); };
+                    let nom = a.n || a.nom || '';
+                    let curs = a.c || a.curs || '';
+                    d.innerText = `${nom} (${curs})`;
+                    d.onclick = function() { triarAlumnePrestec(a.originalIndex, nom); };
                     div.appendChild(d);
                 });
             }
@@ -479,7 +527,11 @@
             if(!text) { div.style.display = 'none'; return; }
             div.innerHTML = '';
             
-            let filtrats = db.libres.map((l, i) => ({...l, originalIndex: i})).filter(l => (l.t||'').toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)) || (l.i && l.i.toLowerCase().includes(text)));
+            let filtrats = db.libres.map((l, i) => ({...l, originalIndex: i})).filter(l => {
+                let titol = l.t || l.titol || '';
+                let autor = l.a || l.autor || '';
+                return titol.toLowerCase().includes(text) || autor.toLowerCase().includes(text);
+            });
             
             if(filtrats.length === 0) {
                 div.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">Cap llibre trobat</div>`;
@@ -487,8 +539,10 @@
                 filtrats.forEach(l => {
                     const d = document.createElement('div');
                     d.className = 'suggestion-item';
-                    d.innerText = `${l.t} - ${l.a || 'Sense autor'}`;
-                    d.onclick = function() { triarLlibrePrestec(l.originalIndex, l.t); };
+                    let titol = l.t || l.titol || '';
+                    let autor = l.a || l.autor || '';
+                    d.innerText = `${titol} - ${autor}`;
+                    d.onclick = function() { triarLlibrePrestec(l.originalIndex, titol); };
                     div.appendChild(d);
                 });
             }
@@ -517,8 +571,15 @@
             let actius = db.prestecs.map((p, i) => ({...p, originalIndex: i})).filter(p => !p.fi);
 
             actius.forEach(p => {
-                const alumneNom = db.alumnos[p.al] ? db.alumnos[p.al].n : "Desconegut";
-                const llibreTitol = db.libres[p.ll] ? db.libres[p.ll].t : "Desconegut";
+                let alIndex = p.al !== undefined ? p.al : p.alumno;
+                let llIndex = p.ll !== undefined ? p.ll : p.libro;
+                let dataInici = p.in || p.inici || '';
+
+                let alumneObj = db.alumnos[alIndex];
+                let llibreObj = db.libres[llIndex];
+
+                const alumneNom = alumneObj ? (alumneObj.n || alumneObj.nom || "Desconegut") : "Desconegut";
+                const llibreTitol = llibreObj ? (llibreObj.t || llibreObj.titol || "Desconegut") : "Desconegut";
                 
                 if(alumneNom.toLowerCase().includes(cerca) || llibreTitol.toLowerCase().includes(cerca)) {
                     const row = document.createElement('div');
@@ -528,7 +589,7 @@
                             <div class="item-text">
                                 <h4>${llibreTitol}</h4>
                                 <p>Prestat a: <strong>${alumneNom}</strong></p>
-                                <p>Data d'inici: ${p.in || ''}</p>
+                                <p>Data d'inici: ${dataInici}</p>
                             </div>
                         </div>
                         <div class="item-actions">
@@ -544,7 +605,7 @@
             const alIdx = document.getElementById('prestec-alumne-seleccionat').value;
             const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
             
-            if(!alIdx || !llIdx) return alert("Si us plau, utilitza els cercadors per buscar i fer clic sobre l'alumne i el llibre desitjats.");
+            if(!alIdx || !llIdx) return alert("Si us plau, utilitza els cercadors predictius.");
             
             const avui = new Date().toLocaleDateString('ca-ES');
             const nouPrestec = {
