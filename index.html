@@ -29,7 +29,7 @@
         input, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; transition: border-color 0.2s; }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
         .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
-        .btn-primary { background: var(--primary); } .btn-primary:hover { background: #2b6cb0; }
+        .btn-primary { background: var(--primary); } .btn-primary:hover { background: #235282; }
         .btn-success { background: var(--success); } .btn-success:hover { background: #22543d; }
         .btn-danger { background: var(--danger); } .btn-danger:hover { background: #9b2c2c; }
         .search-container { margin-bottom: 20px; position: relative; }
@@ -46,22 +46,16 @@
         .action-btn:hover { opacity: 0.9; }
         .action-edit { background: var(--warning); }
         .action-delete { background: var(--danger); }
-        .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e0; border-top: none; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e0; border-top: none; border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .suggestion-item { padding: 10px 12px; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid #edf2f7; }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #edf2f7; color: var(--primary); }
         .selected-badge { display: inline-block; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; margin-top: 5px; font-weight: 600; color: var(--primary); }
-        .sync-banner { background: #feebc8; border: 1px solid #fbd38d; color: #c05621; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
-        .sync-banner button { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="sync-banner" id="initialSyncBanner">
-        <div><strong>Manteniment:</strong> Si notes desequilibris, prem aquest botó per a buidar la memòria i forçar sincronització.</div>
-        <button onclick="ejecutarSincronizacionInicial()"><i class="fa-solid fa-cloud-arrow-up"></i> Forçar Sincronització</button>
-    </div>
     <header>
-        <h1 id="mainTitle">Sistema de Gestió Biblioteca Escola Paidos</h1>
+        <h1>Sistema de Gestió Biblioteca Escola Paidos</h1>
         <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
     </header>
     <div class="stats-grid">
@@ -116,7 +110,7 @@
             <div>
                 <div class="search-container">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-libres" class="search-input" placeholder="Cerca per títol, autor..." oninput="renderLibres()">
+                    <input type="text" id="search-libres" class="search-input" placeholder="Cerca per títol, autor o ISBN..." oninput="renderLibres()">
                 </div>
                 <div id="lista-libres" class="list-container"></div>
             </div>
@@ -155,7 +149,7 @@
                 <h3 style="margin-bottom: 15px;">Registrar Préstec</h3>
                 <div class="form-group">
                     <label>🔍 Buscar i triar Alumne</label>
-                    <input type="text" id="prestec-alumne-search" placeholder="Escriu nom o curs..." autocomplete="off" oninput="filtrarSuggerimentsAlumne()">
+                    <input type="text" id="prestec-alumne-search" placeholder="Escriu part del nom o curs..." autocomplete="off" oninput="filtrarSuggerimentsAlumne()">
                     <div id="suggeriments-alumne" class="autocomplete-suggestions" style="display: none;"></div>
                     <input type="hidden" id="prestec-alumne-seleccionat">
                     <div id="badge-alumne" class="selected-badge" style="display: none;"></div>
@@ -190,12 +184,11 @@
         function sincronitzarAmbServidor() {
             fetch(`${SCRIPT_URL}?action=read`).then(res => res.json()).then(data => {
                 if(data) { db.libres = data.libres || []; db.alumnos = data.alumnos || []; db.prestecs = data.prestecs || []; desarDadesLocals(); renderTot(); }
-            }).catch(err => console.error("Error:", err));
+            }).catch(err => console.error("Error connectant:", err));
         }
         function enviarServidor(accio, tipus, dades) {
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: accio, type: tipus, data: dades }) }).then(() => { setTimeout(sincronitzarAmbServidor, 800); });
         }
-        function ejecutarSincronizacionInicial() { if(confirm("Vols forçar la descàrrega neta?")) { localStorage.clear(); sincronitzarAmbServidor(); } }
         function actualitzarComptadors() {
             document.getElementById('stat-libros').innerText = db.libres.reduce((acc, l) => acc + parseInt(l.q || 1), 0);
             document.getElementById('stat-alumnos').innerText = db.alumnos.length;
@@ -213,9 +206,9 @@
             const llista = document.getElementById('lista-libres'); const cerca = document.getElementById('search-libres').value.toLowerCase(); llista.innerHTML = '';
             let l| = [...db.libres].map((l, i) => ({...l, oI: i})); l|.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
             l|.forEach(l => {
-                if((l.t||'').toLowerCase().includes(cerca) || (l.a||'').toLowerCase().includes(cerca)) {
+                if((l.t||'').toLowerCase().includes(cerca) || (l.a||'').toLowerCase().includes(cerca) || (l.i||'').toLowerCase().includes(cerca)) {
                     const row = document.createElement('div'); row.className = `item-row disponible`;
-                    row.innerHTML = `<div class="item-info"><h4>${l.t}</h4><p>${l.a}</p><p><strong style="color:var(--success)">Exemplars: ${l.q || 1}</strong></p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarLibro(${l.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarLibro(${l.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
+                    row.innerHTML = `<div class="item-info"><h4>${l.t}</h4><p>${l.a || 'Sense autor'}</p><p><strong style="color:var(--success)">Exemplars: ${l.q || 1}</strong></p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarLibro(${l.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarLibro(${l.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
                     llista.appendChild(row);
                 }
             });
@@ -223,7 +216,7 @@
         function guardarLibro() {
             const idx = parseInt(document.getElementById('lib-index').value);
             const lib = { t: document.getElementById('lib-titol').value.trim(), a: document.getElementById('lib-autor').value.trim(), i: document.getElementById('lib-isbn').value.trim(), img: document.getElementById('lib-imatge').value.trim(), q: parseInt(document.getElementById('lib-quantitat').value) || 1 };
-            if(!lib.t) return alert("Títol obligatori");
+            if(!lib.t) return alert("El títol és obligatori");
             if(idx === -1) { db.libres.push(lib); enviarServidor('create', 'libro', lib); } else { db.libres[idx] = lib; enviarServidor('update', 'libro', { index: idx, ...lib }); }
             desarDadesLocals(); resetFormLibro(); renderLibres();
         }
@@ -232,45 +225,45 @@
             document.getElementById('titolo-form-libres').innerText = "Modificar Llibre"; document.getElementById('btn-cancel-lib').style.display = 'block';
         }
         function resetFormLibro() { document.getElementById('lib-index').value = "-1"; document.getElementById('lib-titol').value = ''; document.getElementById('lib-autor').value = ''; document.getElementById('lib-isbn').value = ''; document.getElementById('lib-imatge').value = ''; document.getElementById('lib-quantitat').value = '1'; document.getElementById('titolo-form-libres').innerText = "Afegir Nou Llibre"; document.getElementById('btn-cancel-lib').style.display = 'none'; }
-        function eliminarLibro(idx) { if(confirm("Eliminar llibre?")) { enviarServidor('delete', 'libro', { index: idx }); db.libres.splice(idx, 1); desarDadesLocals(); renderLibres(); } }
+        function eliminarLibro(idx) { if(confirm("Segur que vols eliminar aquest llibre?")) { enviarServidor('delete', 'libro', { index: idx }); db.libres.splice(idx, 1); desarDadesLocals(); renderLibres(); } }
         function renderAlumnos() {
             const llista = document.getElementById('lista-alumnos'); const cerca = document.getElementById('search-alumnos').value.toLowerCase(); llista.innerHTML = '';
             let a| = [...db.alumnos].map((a, i) => ({...a, oI: i})); a|.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
             a|.forEach(a => {
-                if((a.n||'').toLowerCase().includes(cerca)) {
+                if((a.n||'').toLowerCase().includes(cerca) || (a.c||'').toLowerCase().includes(cerca)) {
                     const row = document.createElement('div'); row.className = 'item-row disponible';
-                    row.innerHTML = `<div class="item-info"><h4>${a.n}</h4><p>Classe: ${a.c}</p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarAlumno(${a.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarAlumno(${a.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
+                    row.innerHTML = `<div class="item-info"><h4>${a.n}</h4><p>Classe: ${a.c || 'Sense especificar'}</p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarAlumno(${a.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarAlumno(${a.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
                     llista.appendChild(row);
                 }
             });
         }
         function guardarAlumno() {
             const idx = parseInt(document.getElementById('alu-index').value); const alu = { n: document.getElementById('alu-nom').value.trim(), c: document.getElementById('alu-curs').value.trim() };
-            if(!alu.n) return alert("Nom obligatori");
+            if(!alu.n) return alert("El nom és obligatori");
             if(idx === -1) { db.alumnos.push(alu); enviarServidor('create', 'alumno', alu); } else { db.alumnos[idx] = alu; enviarServidor('update', 'alumno', { index: idx, ...alu }); }
             desarDadesLocals(); resetFormAlumno(); renderAlumnos();
         }
         function editarAlumno(idx) { const a = db.alumnos[idx]; document.getElementById('alu-index').value = idx; document.getElementById('alu-nom').value = a.n; document.getElementById('alu-curs').value = a.c || ''; document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne"; document.getElementById('btn-cancel-alu').style.display = 'block'; }
         function resetFormAlumno() { document.getElementById('alu-index').value = "-1"; document.getElementById('alu-nom').value = ''; document.getElementById('alu-curs').value = ''; document.getElementById('titolo-form-alumnos').innerText = "Afegir Nou Alumne"; document.getElementById('btn-cancel-alu').style.display = 'none'; }
-        function eliminarAlumno(idx) { if(confirm("Eliminar alumne?")) { enviarServidor('delete', 'alumno', { index: idx }); db.alumnos.splice(idx, 1); desarDadesLocals(); renderAlumnos(); } }
+        function eliminarAlumno(idx) { if(confirm("Segur que vols eliminar aquest alumne?")) { enviarServidor('delete', 'alumno', { index: idx }); db.alumnos.splice(idx, 1); desarDadesLocals(); renderAlumnos(); } }
         function filtrarSuggerimentsAlumne() {
             const text = document.getElementById('prestec-alumne-search').value.toLowerCase().trim(); const div = document.getElementById('suggeriments-alumne');
             if(!text) { div.style.display = 'none'; return; } div.innerHTML = '';
-            let f = db.alumnos.map((a, i) => ({...a, oI: i})).filter(a => a.n.toLowerCase().includes(text));
-            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap alumne</div>`; } else {
+            let f = db.alumnos.map((a, i) => ({...a, oI: i})).filter(a => a.n.toLowerCase().includes(text) || (a.c && a.c.toLowerCase().includes(text)));
+            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap alumne trobat</div>`; } else {
                 f.forEach(a => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${a.n} (${a.c || ''})`; d.onclick = function() { triarAlu(a.oI, a.n); }; div.appendChild(d); });
             } div.style.display = 'block';
         }
-        function triarAlu(idx, nom) { document.getElementById('prestec-alumne-seleccionat').value = idx; const b = document.getElementById('badge-alumne'); b.innerText = `Triat: ${nom}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-alumne').style.display = 'none'; document.getElementById('prestec-alumne-search').value = ''; }
+        function triarAlu(idx, nom) { document.getElementById('prestec-alumne-seleccionat').value = idx; const b = document.getElementById('badge-alumne'); b.innerText = `👤 Triat: ${nom}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-alumne').style.display = 'none'; document.getElementById('prestec-alumne-search').value = ''; }
         function filtrarSuggerimentsLlibre() {
             const text = document.getElementById('prestec-llibre-search').value.toLowerCase().trim(); const div = document.getElementById('suggeriments-llibre');
             if(!text) { div.style.display = 'none'; return; } div.innerHTML = '';
-            let f = db.libres.map((l, i) => ({...l, oI: i})).filter(l => l.t.toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)));
-            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap llibre</div>`; } else {
-                f.forEach(l => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${l.t} - ${l.a}`; d.onclick = function() { triarLib(l.oI, l.t); }; div.appendChild(d); });
+            let f = db.libres.map((l, i) => ({...l, oI: i})).filter(l => l.t.toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)) || (l.i && l.i.toLowerCase().includes(text)));
+            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap llibre trobat</div>`; } else {
+                f.forEach(l => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${l.t} - ${l.a || 'Sense autor'}`; d.onclick = function() { triarLib(l.oI, l.t); }; div.appendChild(d); });
             } div.style.display = 'block';
         }
-        function triarLib(idx, t) { document.getElementById('prestec-llibre-seleccionat').value = idx; const b = document.getElementById('badge-llibre'); b.innerText = `Triat: ${t}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-llibre').style.display = 'none'; document.getElementById('prestec-llibre-search').value = ''; }
+        function triarLib(idx, t) { document.getElementById('prestec-llibre-seleccionat').value = idx; const b = document.getElementById('badge-llibre'); b.innerText = `📖 Triat: ${t}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-llibre').style.display = 'none'; document.getElementById('prestec-llibre-search').value = ''; }
         document.addEventListener('click', function(e) { if(e.target.id !== 'prestec-alumne-search') document.getElementById('suggeriments-alumne').style.display = 'none'; if(e.target.id !== 'prestec-llibre-search') document.getElementById('suggeriments-llibre').style.display = 'none'; });
         function renderPrestecs() {
             const llista = document.getElementById('lista-prestecs'); const cerca = document.getElementById('search-prestecs').value.toLowerCase(); llista.innerHTML = '';
@@ -286,7 +279,7 @@
         }
         function guardarPrestec() {
             const alIdx = document.getElementById('prestec-alumne-seleccionat').value; const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
-            if(!alIdx || !llIdx) return alert("Selecciona alumne i llibre de la llista flotant");
+            if(!alIdx || !llIdx) return alert("Si us plau, cerca i selecciona un alumne i un llibre fent clic als desplegables.");
             const avui = new Date().toLocaleDateString('ca-ES'); const nou = { al: parseInt(alIdx), ll: parseInt(llIdx), in: avui, fi: "" };
             db.prestecs.push(nou); enviarServidor('create', 'prestec', nou); desarDadesLocals();
             document.getElementById('prestec-alumne-seleccionat').value = ''; document.getElementById('prestec-llibre-seleccionat').value = ''; document.getElementById('badge-alumne').style.display = 'none'; document.getElementById('badge-llibre').style.display = 'none';
