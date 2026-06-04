@@ -3,61 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Gestió Biblioteca Escola Paidos</title>
+    <title>Gestió Biblioteca Paidos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #2b6cb0; --success: #2f855a; --danger: #c53030; --warning: #dd6b20; --background: #f7fafc; --card-bg: #ffffff; --text: #2d3748; }
+        :root {
+            --primary: #2b6cb0;
+            --success: #2f855a;
+            --danger: #c53030;
+            --warning: #dd6b20;
+            --background: #f7fafc;
+            --card-bg: #ffffff;
+            --text: #2d3748;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: var(--background); color: var(--text); padding: 20px; }
         header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
         .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); display: flex; align-items: center; gap: 15px; }
         .stat-card.alumnes { border-top-color: var(--warning); }
         .stat-card.prestecs { border-top-color: var(--success); }
         .stat-icon { font-size: 2rem; color: #a0aec0; }
+        
         .tabs { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; }
         .tab-btn { padding: 12px 24px; border: none; background: none; font-size: 1rem; font-weight: 600; color: #718096; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
         .tab-btn:hover { color: var(--primary); }
         .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        
         .content-section { display: none; }
         .content-section.active { display: block; }
+        
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; }
         @media(max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        
         .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); height: fit-content; }
         .form-group { margin-bottom: 15px; position: relative; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
         input, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; transition: border-color 0.2s; }
         input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+        
         .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
         .btn-primary { background: var(--primary); } .btn-primary:hover { background: #235282; }
         .btn-success { background: var(--success); } .btn-success:hover { background: #22543d; }
         .btn-danger { background: var(--danger); } .btn-danger:hover { background: #9b2c2c; }
+        
         .search-container { margin-bottom: 20px; position: relative; }
         .search-container i { position: absolute; left: 12px; top: 12px; color: #a0aec0; }
         .search-input { padding-left: 38px; }
+        
         .list-container { display: flex; flex-direction: column; gap: 12px; max-height: 600px; overflow-y: auto; padding-right: 5px; }
         .item-row { background: var(--card-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .item-row.disponible { border-left-color: var(--success); }
         .item-row.prestat { border-left-color: var(--warning); }
-        .item-info h4 { margin-bottom: 4px; font-size: 1.05rem; }
-        .item-info p { font-size: 0.85rem; color: #718096; }
+        .item-info { display: flex; align-items: center; gap: 15px; }
+        .item-text h4 { font-size: 1.05rem; margin-bottom: 2px; }
+        .item-text p { font-size: 0.85rem; color: #718096; }
+        .book-img { width: 45px; height: 65px; object-fit: cover; border-radius: 4px; background: #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .item-actions { display: flex; gap: 8px; }
         .action-btn { border: none; padding: 8px; border-radius: 6px; cursor: pointer; color: white; transition: opacity 0.2s; }
         .action-btn:hover { opacity: 0.9; }
         .action-edit { background: var(--warning); }
         .action-delete { background: var(--danger); }
+
+        /* Estils nous per als cercadors predictius de préstecs */
         .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e0; border-top: none; border-radius: 0 0 6px 6px; max-height: 180px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .suggestion-item { padding: 10px 12px; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid #edf2f7; }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #edf2f7; color: var(--primary); }
-        .selected-badge { display: inline-block; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; margin-top: 5px; font-weight: 600; color: var(--primary); }
+        .selected-badge { display: inline-block; background: #edf2f7; border: 1px solid #cbd5e0; padding: 6px 10px; border-radius: 6px; font-size: 0.9rem; margin-top: 6px; font-weight: 600; color: var(--primary); width: 100%; }
     </style>
 </head>
 <body>
+
     <header>
         <h1>Sistema de Gestió Biblioteca Escola Paidos</h1>
         <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
     </header>
+
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-book"></i></div>
@@ -72,11 +94,13 @@
             <div><p style="font-size: 0.85rem; color: #718096;">PRÉSTECS ACTIUS</p><h2 id="stat-prestecs">0</h2></div>
         </div>
     </div>
+
     <div class="tabs">
         <button class="tab-btn active" id="btn-tab-libres" onclick="switchTab('libres')"><i class="fa-solid fa-book"></i> Llibres</button>
         <button class="tab-btn" id="btn-tab-alumnos" onclick="switchTab('alumnos')"><i class="fa-solid fa-graduation-cap"></i> Alumnes</button>
         <button class="tab-btn" id="btn-tab-prestecs" onclick="switchTab('prestecs')"><i class="fa-solid fa-handshake"></i> Préstecs</button>
     </div>
+
     <div id="section-libres" class="content-section active">
         <div class="grid">
             <div class="card">
@@ -96,7 +120,7 @@
                 </div>
                 <div class="form-group">
                     <label>ID Imatge Cloudinary (Opcional)</label>
-                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge">
+                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge de la portada">
                 </div>
                 <div class="form-group">
                     <label>Unitats Disponibles</label>
@@ -116,6 +140,7 @@
             </div>
         </div>
     </div>
+
     <div id="section-alumnos" class="content-section">
         <div class="grid">
             <div class="card">
@@ -143,10 +168,12 @@
             </div>
         </div>
     </div>
+
     <div id="section-prestecs" class="content-section">
         <div class="grid">
             <div class="card">
                 <h3 style="margin-bottom: 15px;">Registrar Préstec</h3>
+                
                 <div class="form-group">
                     <label>🔍 Buscar i triar Alumne</label>
                     <input type="text" id="prestec-alumne-search" placeholder="Escriu part del nom o curs..." autocomplete="off" oninput="filtrarSuggerimentsAlumne()">
@@ -154,6 +181,7 @@
                     <input type="hidden" id="prestec-alumne-seleccionat">
                     <div id="badge-alumne" class="selected-badge" style="display: none;"></div>
                 </div>
+
                 <div class="form-group">
                     <label>🔍 Buscar i triar Llibre</label>
                     <input type="text" id="prestec-llibre-search" placeholder="Escriu títol, autor o ISBN..." autocomplete="off" oninput="filtrarSuggerimentsLlibre()">
@@ -161,6 +189,7 @@
                     <input type="hidden" id="prestec-llibre-seleccionat">
                     <div id="badge-llibre" class="selected-badge" style="display: none;"></div>
                 </div>
+
                 <button class="btn btn-success" onclick="guardarPrestec()"><i class="fa-solid fa-plus"></i> Realitzar Préstec</button>
             </div>
             <div>
@@ -172,28 +201,62 @@
             </div>
         </div>
     </div>
+
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYgXfLd7vY_M1ZlE7H_9UuK8KPrg1K0G5U7bL2KxH8XN5C7H9X5H6K_g/exec";
         let db = { libres: [], alumnos: [], prestecs: [] };
-        window.onload = function() { carregarDadesLocals(); sincronitzarAmbServidor(); };
+
+        window.onload = function() {
+            carregarDadesLocals();
+            sincronitzarAmbServidor();
+        };
+
         function carregarDadesLocals() {
             const dades = localStorage.getItem('biblioteca_db');
-            if(dades) { db = JSON.parse(dades); actualitzarComptadors(); renderTot(); }
+            if(dades) {
+                db = JSON.parse(dades);
+                actualitzarComptadors();
+                renderTot();
+            }
         }
-        function desarDadesLocals() { localStorage.setItem('biblioteca_db', JSON.stringify(db)); actualitzarComptadors(); }
+
+        function desarDadesLocals() {
+            localStorage.setItem('biblioteca_db', JSON.stringify(db));
+            actualitzarComptadors();
+        }
+
         function sincronitzarAmbServidor() {
-            fetch(`${SCRIPT_URL}?action=read`).then(res => res.json()).then(data => {
-                if(data) { db.libres = data.libres || []; db.alumnos = data.alumnos || []; db.prestecs = data.prestecs || []; desarDadesLocals(); renderTot(); }
-            }).catch(err => console.error("Error connectant:", err));
+            fetch(`${SCRIPT_URL}?action=read`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data) {
+                        db.libres = data.libres || [];
+                        db.alumnos = data.alumnos || [];
+                        db.prestecs = data.prestecs || [];
+                        desarDadesLocals();
+                        renderTot();
+                    }
+                })
+                .catch(err => console.error("Error en connectar amb el servidor:", err));
         }
+
         function enviarServidor(accio, tipus, dades) {
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: accio, type: tipus, data: dades }) }).then(() => { setTimeout(sincronitzarAmbServidor, 800); });
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: accio, type: tipus, data: dades })
+            }).then(() => {
+                setTimeout(sincronitzarAmbServidor, 800);
+            });
         }
+
         function actualitzarComptadors() {
             document.getElementById('stat-libros').innerText = db.libres.reduce((acc, l) => acc + parseInt(l.q || 1), 0);
             document.getElementById('stat-alumnos').innerText = db.alumnos.length;
             document.getElementById('stat-prestecs').innerText = db.prestecs.filter(p => !p.fi).length;
         }
+
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -201,91 +264,316 @@
             document.getElementById(`section-${tab}`).classList.add('active');
             renderTot();
         }
-        function renderTot() { renderLibres(); renderAlumnos(); renderPrestecs(); }
-        function renderLibres() {
-            const llista = document.getElementById('lista-libres'); const cerca = document.getElementById('search-libres').value.toLowerCase(); llista.innerHTML = '';
-            let l| = [...db.libres].map((l, i) => ({...l, oI: i})); l|.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
-            l|.forEach(l => {
-                if((l.t||'').toLowerCase().includes(cerca) || (l.a||'').toLowerCase().includes(cerca) || (l.i||'').toLowerCase().includes(cerca)) {
-                    const row = document.createElement('div'); row.className = `item-row disponible`;
-                    row.innerHTML = `<div class="item-info"><h4>${l.t}</h4><p>${l.a || 'Sense autor'}</p><p><strong style="color:var(--success)">Exemplars: ${l.q || 1}</strong></p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarLibro(${l.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarLibro(${l.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
-                    llista.appendChild(row);
-                }
-            });
-        }
-        function guardarLibro() {
-            const idx = parseInt(document.getElementById('lib-index').value);
-            const lib = { t: document.getElementById('lib-titol').value.trim(), a: document.getElementById('lib-autor').value.trim(), i: document.getElementById('lib-isbn').value.trim(), img: document.getElementById('lib-imatge').value.trim(), q: parseInt(document.getElementById('lib-quantitat').value) || 1 };
-            if(!lib.t) return alert("El títol és obligatori");
-            if(idx === -1) { db.libres.push(lib); enviarServidor('create', 'libro', lib); } else { db.libres[idx] = lib; enviarServidor('update', 'libro', { index: idx, ...lib }); }
-            desarDadesLocals(); resetFormLibro(); renderLibres();
-        }
-        function editarLibro(idx) {
-            const l = db.libres[idx]; document.getElementById('lib-index').value = idx; document.getElementById('lib-titol').value = l.t; document.getElementById('lib-autor').value = l.a || ''; document.getElementById('lib-isbn').value = l.i || ''; document.getElementById('lib-imatge').value = l.img || ''; document.getElementById('lib-quantitat').value = l.q || 1;
-            document.getElementById('titolo-form-libres').innerText = "Modificar Llibre"; document.getElementById('btn-cancel-lib').style.display = 'block';
-        }
-        function resetFormLibro() { document.getElementById('lib-index').value = "-1"; document.getElementById('lib-titol').value = ''; document.getElementById('lib-autor').value = ''; document.getElementById('lib-isbn').value = ''; document.getElementById('lib-imatge').value = ''; document.getElementById('lib-quantitat').value = '1'; document.getElementById('titolo-form-libres').innerText = "Afegir Nou Llibre"; document.getElementById('btn-cancel-lib').style.display = 'none'; }
-        function eliminarLibro(idx) { if(confirm("Segur que vols eliminar aquest llibre?")) { enviarServidor('delete', 'libro', { index: idx }); db.libres.splice(idx, 1); desarDadesLocals(); renderLibres(); } }
-        function renderAlumnos() {
-            const llista = document.getElementById('lista-alumnos'); const cerca = document.getElementById('search-alumnos').value.toLowerCase(); llista.innerHTML = '';
-            let a| = [...db.alumnos].map((a, i) => ({...a, oI: i})); a|.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
-            a|.forEach(a => {
-                if((a.n||'').toLowerCase().includes(cerca) || (a.c||'').toLowerCase().includes(cerca)) {
-                    const row = document.createElement('div'); row.className = 'item-row disponible';
-                    row.innerHTML = `<div class="item-info"><h4>${a.n}</h4><p>Classe: ${a.c || 'Sense especificar'}</p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarAlumno(${a.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarAlumno(${a.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
-                    llista.appendChild(row);
-                }
-            });
-        }
-        function guardarAlumno() {
-            const idx = parseInt(document.getElementById('alu-index').value); const alu = { n: document.getElementById('alu-nom').value.trim(), c: document.getElementById('alu-curs').value.trim() };
-            if(!alu.n) return alert("El nom és obligatori");
-            if(idx === -1) { db.alumnos.push(alu); enviarServidor('create', 'alumno', alu); } else { db.alumnos[idx] = alu; enviarServidor('update', 'alumno', { index: idx, ...alu }); }
-            desarDadesLocals(); resetFormAlumno(); renderAlumnos();
-        }
-        function editarAlumno(idx) { const a = db.alumnos[idx]; document.getElementById('alu-index').value = idx; document.getElementById('alu-nom').value = a.n; document.getElementById('alu-curs').value = a.c || ''; document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne"; document.getElementById('btn-cancel-alu').style.display = 'block'; }
-        function resetFormAlumno() { document.getElementById('alu-index').value = "-1"; document.getElementById('alu-nom').value = ''; document.getElementById('alu-curs').value = ''; document.getElementById('titolo-form-alumnos').innerText = "Afegir Nou Alumne"; document.getElementById('btn-cancel-alu').style.display = 'none'; }
-        function eliminarAlumno(idx) { if(confirm("Segur que vols eliminar aquest alumne?")) { enviarServidor('delete', 'alumno', { index: idx }); db.alumnos.splice(idx, 1); desarDadesLocals(); renderAlumnos(); } }
-        function filtrarSuggerimentsAlumne() {
-            const text = document.getElementById('prestec-alumne-search').value.toLowerCase().trim(); const div = document.getElementById('suggeriments-alumne');
-            if(!text) { div.style.display = 'none'; return; } div.innerHTML = '';
-            let f = db.alumnos.map((a, i) => ({...a, oI: i})).filter(a => a.n.toLowerCase().includes(text) || (a.c && a.c.toLowerCase().includes(text)));
-            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap alumne trobat</div>`; } else {
-                f.forEach(a => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${a.n} (${a.c || ''})`; d.onclick = function() { triarAlu(a.oI, a.n); }; div.appendChild(d); });
-            } div.style.display = 'block';
-        }
-        function triarAlu(idx, nom) { document.getElementById('prestec-alumne-seleccionat').value = idx; const b = document.getElementById('badge-alumne'); b.innerText = `👤 Triat: ${nom}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-alumne').style.display = 'none'; document.getElementById('prestec-alumne-search').value = ''; }
-        function filtrarSuggerimentsLlibre() {
-            const text = document.getElementById('prestec-llibre-search').value.toLowerCase().trim(); const div = document.getElementById('suggeriments-llibre');
-            if(!text) { div.style.display = 'none'; return; } div.innerHTML = '';
-            let f = db.libres.map((l, i) => ({...l, oI: i})).filter(l => l.t.toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)) || (l.i && l.i.toLowerCase().includes(text)));
-            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap llibre trobat</div>`; } else {
-                f.forEach(l => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${l.t} - ${l.a || 'Sense autor'}`; d.onclick = function() { triarLib(l.oI, l.t); }; div.appendChild(d); });
-            } div.style.display = 'block';
-        }
-        function triarLib(idx, t) { document.getElementById('prestec-llibre-seleccionat').value = idx; const b = document.getElementById('badge-llibre'); b.innerText = `📖 Triat: ${t}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-llibre').style.display = 'none'; document.getElementById('prestec-llibre-search').value = ''; }
-        document.addEventListener('click', function(e) { if(e.target.id !== 'prestec-alumne-search') document.getElementById('suggeriments-alumne').style.display = 'none'; if(e.target.id !== 'prestec-llibre-search') document.getElementById('suggeriments-llibre').style.display = 'none'; });
-        function renderPrestecs() {
-            const llista = document.getElementById('lista-prestecs'); const cerca = document.getElementById('search-prestecs').value.toLowerCase(); llista.innerHTML = '';
-            let actius = db.prestecs.map((p, i) => ({...p, oI: i})).filter(p => !p.fi);
-            actius.forEach(p => {
-                const alN = db.alumnos[p.al] ? db.alumnos[p.al].n : "Desconegut"; const llT = db.libres[p.ll] ? db.libres[p.ll].t : "Desconegut";
-                if(alN.toLowerCase().includes(cerca) || llT.toLowerCase().includes(cerca)) {
-                    const row = document.createElement('div'); row.className = 'item-row prestat';
-                    row.innerHTML = `<div class="item-info"><h4>${llT}</h4><p>Prestat a: ${alN}</p><p>Data: ${p.in || ''}</p></div><div class="item-actions"><button class="btn btn-success" style="padding:6px 12px; font-size:0.85rem;" onclick="retornarPrestec(${p.oI})">Retornat</button></div>`;
-                    llista.appendChild(row);
-                }
-            });
-        }
-        function guardarPrestec() {
-            const alIdx = document.getElementById('prestec-alumne-seleccionat').value; const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
-            if(!alIdx || !llIdx) return alert("Si us plau, cerca i selecciona un alumne i un llibre fent clic als desplegables.");
-            const avui = new Date().toLocaleDateString('ca-ES'); const nou = { al: parseInt(alIdx), ll: parseInt(llIdx), in: avui, fi: "" };
-            db.prestecs.push(nou); enviarServidor('create', 'prestec', nou); desarDadesLocals();
-            document.getElementById('prestec-alumne-seleccionat').value = ''; document.getElementById('prestec-llibre-seleccionat').value = ''; document.getElementById('badge-alumne').style.display = 'none'; document.getElementById('badge-llibre').style.display = 'none';
+
+        function renderTot() {
+            renderLibres();
+            renderAlumnos();
             renderPrestecs();
         }
-        function retornarPrestec(idx) { const avui = new Date().toLocaleDateString('ca-ES'); db.prestecs[idx].fi = avui; enviarServidor('update', 'prestec', { index: idx, ...db.prestecs[idx] }); desarDadesLocals(); renderPrestecs(); }
+
+        function renderLibres() {
+            const llista = document.getElementById('lista-libres');
+            const cerca = document.getElementById('search-libres').value.toLowerCase();
+            llista.innerHTML = '';
+            
+            let llibresAmbIndex = db.libres.map((l, i) => ({...l, originalIndex: i}));
+            llibresAmbIndex.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
+
+            llibresAmbIndex.forEach(l => {
+                const titol = l.t || '';
+                const autor = l.a || '';
+                const isbn = l.i || '';
+                
+                if(titol.toLowerCase().includes(cerca) || autor.toLowerCase().includes(cerca) || isbn.toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div');
+                    row.className = 'item-row disponible';
+                    
+                    let imgSrc = l.c ? (l.c.startsWith('http') ? l.c : `https://res.cloudinary.com/id/image/upload/${l.c}`) : '';
+                    let imgHtml = imgSrc ? `<img src="${imgSrc}" class="book-img" onerror="this.style.display='none'">` : '<div class="book-img" style="display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#a0aec0;">No Img</div>';
+
+                    row.innerHTML = `
+                        <div class="item-info">
+                            ${imgHtml}
+                            <div class="item-text">
+                                <h4>${titol}</h4>
+                                <p>${autor} | ISBN: ${isbn}</p>
+                                <p><span style="background:#c6f6d5;color:#22543d;padding:2px 6px;border-radius:4px;font-size:0.8rem;font-weight:bold;">Exemplars: ${l.q || 1}</span></p>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn action-edit" onclick="editarLibro(${l.originalIndex})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn action-delete" onclick="eliminarLibro(${l.originalIndex})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    llista.appendChild(row);
+                }
+            });
+        }
+
+        function guardarLibro() {
+            const idx = parseInt(document.getElementById('lib-index').value);
+            const lib = {
+                t: document.getElementById('lib-titol').value.trim(),
+                a: document.getElementById('lib-autor').value.trim(),
+                i: document.getElementById('lib-isbn').value.trim(),
+                c: document.getElementById('lib-imatge').value.trim(),
+                q: parseInt(document.getElementById('lib-quantitat').value) || 1
+            };
+            if(!lib.t) return alert("El títol és obligatori");
+            
+            if(idx === -1) {
+                db.libres.push(lib);
+                enviarServidor('create', 'libro', lib);
+            } else {
+                db.libres[idx] = lib;
+                enviarServidor('update', 'libro', { index: idx, ...lib });
+            }
+            desarDadesLocals();
+            resetFormLibro();
+            renderLibres();
+        }
+
+        function editarLibro(idx) {
+            const l = db.libres[idx];
+            document.getElementById('lib-index').value = idx;
+            document.getElementById('lib-titol').value = l.t || '';
+            document.getElementById('lib-autor').value = l.a || '';
+            document.getElementById('lib-isbn').value = l.i || '';
+            document.getElementById('lib-imatge').value = l.c || '';
+            document.getElementById('lib-quantitat').value = l.q || 1;
+            document.getElementById('titolo-form-libres').innerText = "Modificar Llibre";
+            document.getElementById('btn-cancel-lib').style.display = 'block';
+        }
+
+        function resetFormLibro() {
+            document.getElementById('lib-index').value = "-1";
+            document.getElementById('lib-titol').value = '';
+            document.getElementById('lib-autor').value = '';
+            document.getElementById('lib-isbn').value = '';
+            document.getElementById('lib-imatge').value = '';
+            document.getElementById('lib-quantitat').value = '1';
+            document.getElementById('titolo-form-libres').innerText = "Afegir Nou Llibre";
+            document.getElementById('btn-cancel-lib').style.display = 'none';
+        }
+
+        function eliminarLibro(idx) {
+            if(confirm("Segur que vols eliminar aquest llibre?")) {
+                enviarServidor('delete', 'libro', { index: idx });
+                db.libres.splice(idx, 1);
+                desarDadesLocals();
+                renderLibres();
+            }
+        }
+
+        function renderAlumnos() {
+            const llista = document.getElementById('lista-alumnos');
+            const cerca = document.getElementById('search-alumnos').value.toLowerCase();
+            llista.innerHTML = '';
+            
+            let alumnesAmbIndex = db.alumnos.map((a, i) => ({...a, originalIndex: i}));
+            alumnesAmbIndex.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
+
+            alumnesAmbIndex.forEach(a => {
+                const nom = a.n || '';
+                const curs = a.c || '';
+                if(nom.toLowerCase().includes(cerca) || curs.toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div');
+                    row.className = 'item-row disponible';
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-text">
+                                <h4>${nom}</h4>
+                                <p>Classe: ${curs || 'Sense especificar'}</p>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn action-edit" onclick="editarAlumno(${a.originalIndex})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn action-delete" onclick="eliminarAlumno(${a.originalIndex})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    llista.appendChild(row);
+                }
+            });
+        }
+
+        function guardarAlumno() {
+            const idx = parseInt(document.getElementById('alu-index').value);
+            const alu = {
+                n: document.getElementById('alu-nom').value.trim(),
+                c: document.getElementById('alu-curs').value.trim()
+            };
+            if(!alu.n) return alert("El nom és obligatori");
+            
+            if(idx === -1) {
+                db.alumnos.push(alu);
+                enviarServidor('create', 'alumno', alu);
+            } else {
+                db.alumnos[idx] = alu;
+                enviarServidor('update', 'alumno', { index: idx, ...alu });
+            }
+            desarDadesLocals();
+            resetFormAlumno();
+            renderAlumnos();
+        }
+
+        function editarAlumno(idx) {
+            const a = db.alumnos[idx];
+            document.getElementById('alu-index').value = idx;
+            document.getElementById('alu-nom').value = a.n || '';
+            document.getElementById('alu-curs').value = a.c || '';
+            document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne";
+            document.getElementById('btn-cancel-alu').style.display = 'block';
+        }
+
+        function resetFormAlumno() {
+            document.getElementById('alu-index').value = "-1";
+            document.getElementById('alu-nom').value = '';
+            document.getElementById('alu-curs').value = '';
+            document.getElementById('titolo-form-alumnos').innerText = "Afegir Nou Alumne";
+            document.getElementById('btn-cancel-alu').style.display = 'none';
+        }
+
+        function eliminarAlumno(idx) {
+            if(confirm("Segur que vols eliminar aquest alumne?")) {
+                enviarServidor('delete', 'alumno', { index: idx });
+                db.alumnos.splice(idx, 1);
+                desarDadesLocals();
+                renderAlumnos();
+            }
+        }
+
+        /* LOGICA DE CERCA PREDICTIVA PER ALS PRESTECS */
+        function filtrarSuggerimentsAlumne() {
+            const text = document.getElementById('prestec-alumne-search').value.toLowerCase().trim();
+            const div = document.getElementById('suggeriments-alumne');
+            if(!text) { div.style.display = 'none'; return; }
+            div.innerHTML = '';
+            
+            let filtrats = db.alumnos.map((a, i) => ({...a, originalIndex: i})).filter(a => (a.n||'').toLowerCase().includes(text) || (a.c && a.c.toLowerCase().includes(text)));
+            
+            if(filtrats.length === 0) {
+                div.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">Cap alumne trobat</div>`;
+            } else {
+                filtrats.forEach(a => {
+                    const d = document.createElement('div');
+                    d.className = 'suggestion-item';
+                    d.innerText = `${a.n} (${a.c || ''})`;
+                    d.onclick = function() { triarAlumnePrestec(a.originalIndex, a.n); };
+                    div.appendChild(d);
+                });
+            }
+            div.style.display = 'block';
+        }
+
+        function triarAlumnePrestec(idx, nom) {
+            document.getElementById('prestec-alumne-seleccionat').value = idx;
+            const badge = document.getElementById('badge-alumne');
+            badge.innerHTML = `<i class="fa-solid fa-user"></i> Alumne seleccionat: <strong>${nom}</strong>`;
+            badge.style.display = 'inline-block';
+            document.getElementById('suggeriments-alumne').style.display = 'none';
+            document.getElementById('prestec-alumne-search').value = '';
+        }
+
+        function filtrarSuggerimentsLlibre() {
+            const text = document.getElementById('prestec-llibre-search').value.toLowerCase().trim();
+            const div = document.getElementById('suggeriments-llibre');
+            if(!text) { div.style.display = 'none'; return; }
+            div.innerHTML = '';
+            
+            let filtrats = db.libres.map((l, i) => ({...l, originalIndex: i})).filter(l => (l.t||'').toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)) || (l.i && l.i.toLowerCase().includes(text)));
+            
+            if(filtrats.length === 0) {
+                div.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">Cap llibre trobat</div>`;
+            } else {
+                filtrats.forEach(l => {
+                    const d = document.createElement('div');
+                    d.className = 'suggestion-item';
+                    d.innerText = `${l.t} - ${l.a || 'Sense autor'}`;
+                    d.onclick = function() { triarLlibrePrestec(l.originalIndex, l.t); };
+                    div.appendChild(d);
+                });
+            }
+            div.style.display = 'block';
+        }
+
+        function triarLlibrePrestec(idx, titol) {
+            document.getElementById('prestec-llibre-seleccionat').value = idx;
+            const badge = document.getElementById('badge-llibre');
+            badge.innerHTML = `<i class="fa-solid fa-book"></i> Llibre seleccionat: <strong>${titol}</strong>`;
+            badge.style.display = 'inline-block';
+            document.getElementById('suggeriments-llibre').style.display = 'none';
+            document.getElementById('prestec-llibre-search').value = '';
+        }
+
+        document.addEventListener('click', function(e) {
+            if(e.target.id !== 'prestec-alumne-search') document.getElementById('suggeriments-alumne').style.display = 'none';
+            if(e.target.id !== 'prestec-llibre-search') document.getElementById('suggeriments-llibre').style.display = 'none';
+        });
+
+        function renderPrestecs() {
+            const llista = document.getElementById('lista-prestecs');
+            const cerca = document.getElementById('search-prestecs').value.toLowerCase();
+            llista.innerHTML = '';
+            
+            let actius = db.prestecs.map((p, i) => ({...p, originalIndex: i})).filter(p => !p.fi);
+
+            actius.forEach(p => {
+                const alumneNom = db.alumnos[p.al] ? db.alumnos[p.al].n : "Desconegut";
+                const llibreTitol = db.libres[p.ll] ? db.libres[p.ll].t : "Desconegut";
+                
+                if(alumneNom.toLowerCase().includes(cerca) || llibreTitol.toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div');
+                    row.className = 'item-row prestat';
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <div class="item-text">
+                                <h4>${llibreTitol}</h4>
+                                <p>Prestat a: <strong>${alumneNom}</strong></p>
+                                <p>Data d'inici: ${p.in || ''}</p>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-success" style="padding:6px 12px; font-size:0.85rem;" onclick="retornarPrestec(${p.originalIndex})">Retornat</button>
+                        </div>
+                    `;
+                    llista.appendChild(row);
+                }
+            });
+        }
+
+        function guardarPrestec() {
+            const alIdx = document.getElementById('prestec-alumne-seleccionat').value;
+            const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
+            
+            if(!alIdx || !llIdx) return alert("Si us plau, utilitza els cercadors per buscar i fer clic sobre l'alumne i el llibre desitjats.");
+            
+            const avui = new Date().toLocaleDateString('ca-ES');
+            const nouPrestec = {
+                al: parseInt(alIdx),
+                ll: parseInt(llIdx),
+                in: avui,
+                fi: ""
+            };
+            
+            db.prestecs.push(nouPrestec);
+            enviarServidor('create', 'prestec', nouPrestec);
+            desarDadesLocals();
+            
+            document.getElementById('prestec-alumne-seleccionat').value = '';
+            document.getElementById('prestec-llibre-seleccionat').value = '';
+            document.getElementById('badge-alumne').style.display = 'none';
+            document.getElementById('badge-llibre').style.display = 'none';
+            
+            renderPrestecs();
+        }
+
+        function retornarPrestec(idx) {
+            const avui = new Date().toLocaleDateString('ca-ES');
+            db.prestecs[idx].fi = avui;
+            enviarServidor('update', 'prestec', { index: idx, ...db.prestecs[idx] });
+            desarDadesLocals();
+            renderPrestecs();
+        }
     </script>
 </body>
 </html>
