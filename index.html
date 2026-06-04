@@ -46,30 +46,24 @@
         .action-btn:hover { opacity: 0.9; }
         .action-edit { background: var(--warning); }
         .action-delete { background: var(--danger); }
-        
-        /* Estils Cercador Predictiu Predictius */
         .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e0; border-top: none; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         .suggestion-item { padding: 10px 12px; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid #edf2f7; }
         .suggestion-item:last-child { border-bottom: none; }
         .suggestion-item:hover { background: #edf2f7; color: var(--primary); }
         .selected-badge { display: inline-block; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; margin-top: 5px; font-weight: 600; color: var(--primary); }
-        
         .sync-banner { background: #feebc8; border: 1px solid #fbd38d; color: #c05621; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
         .sync-banner button { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-
     <div class="sync-banner" id="initialSyncBanner">
-        <div><strong>Manteniment:</strong> Si notes desequilibris o errors de recompte, prem aquest botó per a buidar la memòria i forçar sincronització.</div>
+        <div><strong>Manteniment:</strong> Si notes desequilibris, prem aquest botó per a buidar la memòria i forçar sincronització.</div>
         <button onclick="ejecutarSincronizacionInicial()"><i class="fa-solid fa-cloud-arrow-up"></i> Forçar Sincronització</button>
     </div>
-
     <header>
         <h1 id="mainTitle">Sistema de Gestió Biblioteca Escola Paidos</h1>
         <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
     </header>
-
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon"><i class="fa-solid fa-book"></i></div>
@@ -84,14 +78,11 @@
             <div><p style="font-size: 0.85rem; color: #718096;">PRÉSTECS ACTIUS</p><h2 id="stat-prestecs">0</h2></div>
         </div>
     </div>
-
     <div class="tabs">
         <button class="tab-btn active" id="btn-tab-libres" onclick="switchTab('libres')"><i class="fa-solid fa-book"></i> Llibres</button>
         <button class="tab-btn" id="btn-tab-alumnos" onclick="switchTab('alumnos')"><i class="fa-solid fa-graduation-cap"></i> Alumnes</button>
         <button class="tab-btn" id="btn-tab-prestecs" onclick="switchTab('prestecs')"><i class="fa-solid fa-handshake"></i> Préstecs</button>
     </div>
-
-    <!-- SECCIÓ LLIBRES -->
     <div id="section-libres" class="content-section active">
         <div class="grid">
             <div class="card">
@@ -111,7 +102,7 @@
                 </div>
                 <div class="form-group">
                     <label>ID Imatge Cloudinary (Opcional)</label>
-                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge o buit">
+                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge">
                 </div>
                 <div class="form-group">
                     <label>Unitats Disponibles</label>
@@ -125,14 +116,12 @@
             <div>
                 <div class="search-container">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-libres" class="search-input" placeholder="Cerca per títol, autor o ISBN..." oninput="renderLibres()">
+                    <input type="text" id="search-libres" class="search-input" placeholder="Cerca per títol, autor..." oninput="renderLibres()">
                 </div>
                 <div id="lista-libres" class="list-container"></div>
             </div>
         </div>
     </div>
-
-    <!-- SECCIÓ ALUMNES -->
     <div id="section-alumnos" class="content-section">
         <div class="grid">
             <div class="card">
@@ -154,29 +143,23 @@
             <div>
                 <div class="search-container">
                     <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-alumnos" class="search-input" placeholder="Cerca alumne per nom o curs..." oninput="renderAlumnos()">
+                    <input type="text" id="search-alumnos" class="search-input" placeholder="Cerca alumne..." oninput="renderAlumnos()">
                 </div>
                 <div id="lista-alumnos" class="list-container"></div>
             </div>
         </div>
     </div>
-
-    <!-- SECCIÓ PRÉSTECS -->
     <div id="section-prestecs" class="content-section">
         <div class="grid">
             <div class="card">
                 <h3 style="margin-bottom: 15px;">Registrar Préstec</h3>
-                
-                <!-- CERCADOR PREDICTIU D'ALUMNES -->
                 <div class="form-group">
                     <label>🔍 Buscar i triar Alumne</label>
-                    <input type="text" id="prestec-alumne-search" placeholder="Escriu nom, cognom o curs..." autocomplete="off" oninput="filtrarSuggerimentsAlumne()">
+                    <input type="text" id="prestec-alumne-search" placeholder="Escriu nom o curs..." autocomplete="off" oninput="filtrarSuggerimentsAlumne()">
                     <div id="suggeriments-alumne" class="autocomplete-suggestions" style="display: none;"></div>
                     <input type="hidden" id="prestec-alumne-seleccionat">
                     <div id="badge-alumne" class="selected-badge" style="display: none;"></div>
                 </div>
-
-                <!-- CERCADOR PREDICTIU DE LLIBRES -->
                 <div class="form-group">
                     <label>🔍 Buscar i triar Llibre</label>
                     <input type="text" id="prestec-llibre-search" placeholder="Escriu títol, autor o ISBN..." autocomplete="off" oninput="filtrarSuggerimentsLlibre()">
@@ -184,7 +167,6 @@
                     <input type="hidden" id="prestec-llibre-seleccionat">
                     <div id="badge-llibre" class="selected-badge" style="display: none;"></div>
                 </div>
-
                 <button class="btn btn-success" onclick="guardarPrestec()"><i class="fa-solid fa-plus"></i> Realitzar Préstec</button>
             </div>
             <div>
@@ -196,70 +178,29 @@
             </div>
         </div>
     </div>
-
     <script>
-        // CONFIGURACIÓ DE L'SCRIPT WEB DE GOOGLE SHEETS
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYgXfLd7vY_M1ZlE7H_9UuK8KPrg1K0G5U7bL2KxH8XN5C7H9X5H6K_g/exec";
-
         let db = { libres: [], alumnos: [], prestecs: [] };
-
-        window.onload = function() {
-            carregarDadesLocals();
-            sincronitzarAmbServidor();
-        };
-
+        window.onload = function() { carregarDadesLocals(); sincronitzarAmbServidor(); };
         function carregarDadesLocals() {
             const dades = localStorage.getItem('biblioteca_db');
-            if(dades) {
-                db = JSON.parse(dades);
-                actualitzarComptadors();
-                renderTot();
-            }
+            if(dades) { db = JSON.parse(dades); actualitzarComptadors(); renderTot(); }
         }
-
-        function desarDadesLocals() {
-            localStorage.setItem('biblioteca_db', JSON.stringify(db));
-            actualitzarComptadors();
-        }
-
+        function desarDadesLocals() { localStorage.setItem('biblioteca_db', JSON.stringify(db)); actualitzarComptadors(); }
         function sincronitzarAmbServidor() {
-            fetch(`${SCRIPT_URL}?action=read`)
-            .then(res => res.json())
-            .then(data => {
-                if(data) {
-                    db.libres = data.libres || [];
-                    db.alumnos = data.alumnos || [];
-                    db.prestecs = data.prestecs || [];
-                    desarDadesLocals();
-                    renderTot();
-                }
-            }).catch(err => console.error("Error sincronitzant:", err));
+            fetch(`${SCRIPT_URL}?action=read`).then(res => res.json()).then(data => {
+                if(data) { db.libres = data.libres || []; db.alumnos = data.alumnos || []; db.prestecs = data.prestecs || []; desarDadesLocals(); renderTot(); }
+            }).catch(err => console.error("Error:", err));
         }
-
         function enviarServidor(accio, tipus, dades) {
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: accio, type: tipus, data: dades })
-            }).then(() => {
-                setTimeout(sincronitzarAmbServidor, 800);
-            });
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: accio, type: tipus, data: dades }) }).then(() => { setTimeout(sincronitzarAmbServidor, 800); });
         }
-
-        function ejecutarSincronizacionInicial() {
-            if(confirm("Vols forçar una descàrrega neta de dades des de Google Sheets?")) {
-                localStorage.clear();
-                sincronitzarAmbServidor();
-            }
-        }
-
+        function ejecutarSincronizacionInicial() { if(confirm("Vols forçar la descàrrega neta?")) { localStorage.clear(); sincronitzarAmbServidor(); } }
         function actualitzarComptadors() {
             document.getElementById('stat-libros').innerText = db.libres.reduce((acc, l) => acc + parseInt(l.q || 1), 0);
             document.getElementById('stat-alumnos').innerText = db.alumnos.length;
             document.getElementById('stat-prestecs').innerText = db.prestecs.filter(p => !p.fi).length;
         }
-
         function switchTab(tab) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
@@ -267,315 +208,91 @@
             document.getElementById(`section-${tab}`).classList.add('active');
             renderTot();
         }
-
-        function renderTot() {
-            renderLibres();
-            renderAlumnos();
-            renderPrestecs();
-        }
-
-        // --- APARTAT LLIBRES (ORDENATS ALFABÈTICAMENT) ---
+        function renderTot() { renderLibres(); renderAlumnos(); renderPrestecs(); }
         function renderLibres() {
-            const llista = document.getElementById('lista-libres');
-            const cerca = document.getElementById('search-libres').value.toLowerCase();
-            llista.innerHTML = '';
-
-            let llistaOrdenada = [...db.libres].map((l, i) => ({...l, originalIndex: i}));
-            llistaOrdenada.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
-
-            llistaOrdenada.forEach(l => {
-                if((l.t||'').toLowerCase().includes(cerca) || (l.a||'').toLowerCase().includes(cerca) || (l.i||'').toLowerCase().includes(cerca)) {
-                    const row = document.createElement('div');
-                    row.className = `item-row disponible`;
-                    row.innerHTML = `
-                        <div class="item-info">
-                            <h4>${l.t}</h4>
-                            <p>${l.a} | ISBN: ${l.i || 'N/A'}</p>
-                            <p><strong style="color:var(--success)">Exemplars Totals: ${l.q || 1}</strong></p>
-                        </div>
-                        <div class="item-actions">
-                            <button class="action-btn action-edit" onclick="editarLibro(${l.originalIndex})"><i class="fa-solid fa-pen"></i></button>
-                            <button class="action-btn action-delete" onclick="eliminarLibro(${l.originalIndex})"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `;
+            const llista = document.getElementById('lista-libres'); const cerca = document.getElementById('search-libres').value.toLowerCase(); llista.innerHTML = '';
+            let l| = [...db.libres].map((l, i) => ({...l, oI: i})); l|.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
+            l|.forEach(l => {
+                if((l.t||'').toLowerCase().includes(cerca) || (l.a||'').toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div'); row.className = `item-row disponible`;
+                    row.innerHTML = `<div class="item-info"><h4>${l.t}</h4><p>${l.a}</p><p><strong style="color:var(--success)">Exemplars: ${l.q || 1}</strong></p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarLibro(${l.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarLibro(${l.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
                     llista.appendChild(row);
                 }
             });
         }
-
         function guardarLibro() {
             const idx = parseInt(document.getElementById('lib-index').value);
-            const llibre = {
-                t: document.getElementById('lib-titol').value.trim(),
-                a: document.getElementById('lib-autor').value.trim(),
-                i: document.getElementById('lib-isbn').value.trim(),
-                img: document.getElementById('lib-imatge').value.trim(),
-                q: parseInt(document.getElementById('lib-quantitat').value) || 1
-            };
-
-            if(!llibre.t) return alert("El títol és obligatori");
-
-            if(idx === -1) {
-                db.libres.push(llibre);
-                enviarServidor('create', 'libro', llibre);
-            } else {
-                db.libres[idx] = llibre;
-                enviarServidor('update', 'libro', { index: idx, ...llibre });
-            }
-            desarDadesLocals();
-            resetFormLibro();
-            renderLibres();
+            const lib = { t: document.getElementById('lib-titol').value.trim(), a: document.getElementById('lib-autor').value.trim(), i: document.getElementById('lib-isbn').value.trim(), img: document.getElementById('lib-imatge').value.trim(), q: parseInt(document.getElementById('lib-quantitat').value) || 1 };
+            if(!lib.t) return alert("Títol obligatori");
+            if(idx === -1) { db.libres.push(lib); enviarServidor('create', 'libro', lib); } else { db.libres[idx] = lib; enviarServidor('update', 'libro', { index: idx, ...lib }); }
+            desarDadesLocals(); resetFormLibro(); renderLibres();
         }
-
         function editarLibro(idx) {
-            const l = db.libres[idx];
-            document.getElementById('lib-index').value = idx;
-            document.getElementById('lib-titol').value = l.t;
-            document.getElementById('lib-autor').value = l.a || '';
-            document.getElementById('lib-isbn').value = l.i || '';
-            document.getElementById('lib-imatge').value = l.img || '';
-            document.getElementById('lib-quantitat').value = l.q || 1;
-            document.getElementById('titolo-form-libres').innerText = "Modificar Llibre";
-            document.getElementById('btn-cancel-lib').style.display = 'block';
+            const l = db.libres[idx]; document.getElementById('lib-index').value = idx; document.getElementById('lib-titol').value = l.t; document.getElementById('lib-autor').value = l.a || ''; document.getElementById('lib-isbn').value = l.i || ''; document.getElementById('lib-imatge').value = l.img || ''; document.getElementById('lib-quantitat').value = l.q || 1;
+            document.getElementById('titolo-form-libres').innerText = "Modificar Llibre"; document.getElementById('btn-cancel-lib').style.display = 'block';
         }
-
-        function resetFormLibro() {
-            document.getElementById('lib-index').value = "-1";
-            document.getElementById('lib-titol').value = '';
-            document.getElementById('lib-autor').value = '';
-            document.getElementById('lib-isbn').value = '';
-            document.getElementById('lib-imatge').value = '';
-            document.getElementById('lib-quantitat').value = '1';
-            document.getElementById('titolo-form-libres').innerText = "Afegir Nou Llibre";
-            document.getElementById('btn-cancel-lib').style.display = 'none';
-        }
-
-        function eliminarLibro(idx) {
-            if(confirm(`Segur que vols eliminar "${db.libres[idx].t}"?`)) {
-                enviarServidor('delete', 'libro', { index: idx });
-                db.libres.splice(idx, 1);
-                desarDadesLocals();
-                renderLibres();
-            }
-        }
-
-        // --- APARTAT ALUMNES ---
+        function resetFormLibro() { document.getElementById('lib-index').value = "-1"; document.getElementById('lib-titol').value = ''; document.getElementById('lib-autor').value = ''; document.getElementById('lib-isbn').value = ''; document.getElementById('lib-imatge').value = ''; document.getElementById('lib-quantitat').value = '1'; document.getElementById('titolo-form-libres').innerText = "Afegir Nou Llibre"; document.getElementById('btn-cancel-lib').style.display = 'none'; }
+        function eliminarLibro(idx) { if(confirm("Eliminar llibre?")) { enviarServidor('delete', 'libro', { index: idx }); db.libres.splice(idx, 1); desarDadesLocals(); renderLibres(); } }
         function renderAlumnos() {
-            const llista = document.getElementById('lista-alumnos');
-            const cerca = document.getElementById('search-alumnos').value.toLowerCase();
-            llista.innerHTML = '';
-
-            let llistaOrdenada = [...db.alumnos].map((a, i) => ({...a, originalIndex: i}));
-            llistaOrdenada.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
-
-            llistaOrdenada.forEach(a => {
-                if((a.n||'').toLowerCase().includes(cerca) || (a.c||'').toLowerCase().includes(cerca)) {
-                    const row = document.createElement('div');
-                    row.className = 'item-row disponible';
-                    row.innerHTML = `
-                        <div class="item-info">
-                            <h4>${a.n}</h4>
-                            <p>Classe: ${a.c}</p>
-                        </div>
-                        <div class="item-actions">
-                            <button class="action-btn action-edit" onclick="editarAlumno(${a.originalIndex})"><i class="fa-solid fa-pen"></i></button>
-                            <button class="action-btn action-delete" onclick="eliminarAlumno(${a.originalIndex})"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    `;
+            const llista = document.getElementById('lista-alumnos'); const cerca = document.getElementById('search-alumnos').value.toLowerCase(); llista.innerHTML = '';
+            let a| = [...db.alumnos].map((a, i) => ({...a, oI: i})); a|.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
+            a|.forEach(a => {
+                if((a.n||'').toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div'); row.className = 'item-row disponible';
+                    row.innerHTML = `<div class="item-info"><h4>${a.n}</h4><p>Classe: ${a.c}</p></div><div class="item-actions"><button class="action-btn action-edit" onclick="editarAlumno(${a.oI})"><i class="fa-solid fa-pen"></i></button><button class="action-btn action-delete" onclick="eliminarAlumno(${a.oI})"><i class="fa-solid fa-trash"></i></button></div>`;
                     llista.appendChild(row);
                 }
             });
         }
-
         function guardarAlumno() {
-            const idx = parseInt(document.getElementById('alu-index').value);
-            const alumne = {
-                n: document.getElementById('alu-nom').value.trim(),
-                c: document.getElementById('alu-curs').value.trim()
-            };
-
-            if(!alumne.n) return alert("El nom és obligatori");
-
-            if(idx === -1) {
-                db.alumnos.push(alumne);
-                enviarServidor('create', 'alumno', alumne);
-            } else {
-                db.alumnos[idx] = alumne;
-                enviarServidor('update', 'alumno', { index: idx, ...alumne });
-            }
-            desarDadesLocals();
-            resetFormAlumno();
-            renderAlumnos();
+            const idx = parseInt(document.getElementById('alu-index').value); const alu = { n: document.getElementById('alu-nom').value.trim(), c: document.getElementById('alu-curs').value.trim() };
+            if(!alu.n) return alert("Nom obligatori");
+            if(idx === -1) { db.alumnos.push(alu); enviarServidor('create', 'alumno', alu); } else { db.alumnos[idx] = alu; enviarServidor('update', 'alumno', { index: idx, ...alu }); }
+            desarDadesLocals(); resetFormAlumno(); renderAlumnos();
         }
-
-        function editarAlumno(idx) {
-            const a = db.alumnos[idx];
-            document.getElementById('alu-index').value = idx;
-            document.getElementById('alu-nom').value = a.n;
-            document.getElementById('alu-curs').value = a.c || '';
-            document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne";
-            document.getElementById('btn-cancel-alu').style.display = 'block';
-        }
-
-        function resetFormAlumno() {
-            document.getElementById('alu-index').value = "-1";
-            document.getElementById('alu-nom').value = '';
-            document.getElementById('alu-curs').value = '';
-            document.getElementById('titolo-form-alumnos').innerText = "Afegir Nou Alumne";
-            document.getElementById('btn-cancel-alu').style.display = 'none';
-        }
-
-        function eliminarAlumno(idx) {
-            if(confirm(`Segur que vols eliminar l'alumne/a "${db.alumnos[idx].n}"?`)) {
-                enviarServidor('delete', 'alumno', { index: idx });
-                db.alumnos.splice(idx, 1);
-                desarDadesLocals();
-                renderAlumnos();
-            }
-        }
-
-        // --- FILTRES PROGRESIUS / CERCADORS PREDICTIUS PER A PRÉSTECS ---
+        function editarAlumno(idx) { const a = db.alumnos[idx]; document.getElementById('alu-index').value = idx; document.getElementById('alu-nom').value = a.n; document.getElementById('alu-curs').value = a.c || ''; document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne"; document.getElementById('btn-cancel-alu').style.display = 'block'; }
+        function resetFormAlumno() { document.getElementById('alu-index').value = "-1"; document.getElementById('alu-nom').value = ''; document.getElementById('alu-curs').value = ''; document.getElementById('titolo-form-alumnos').innerText = "Afegir Nou Alumne"; document.getElementById('btn-cancel-alu').style.display = 'none'; }
+        function eliminarAlumno(idx) { if(confirm("Eliminar alumne?")) { enviarServidor('delete', 'alumno', { index: idx }); db.alumnos.splice(idx, 1); desarDadesLocals(); renderAlumnos(); } }
         function filtrarSuggerimentsAlumne() {
-            const input = document.getElementById('prestec-alumne-search');
-            const text = input.value.toLowerCase().trim();
-            const divSuggeriments = document.getElementById('suggeriments-alumne');
-            
-            if(!text) { divSuggeriments.style.display = 'none'; return; }
-            divSuggeriments.innerHTML = '';
-
-            let filtrats = db.alumnos.map((a, i) => ({...a, originalIndex: i}))
-                                     .filter(a => a.n.toLowerCase().includes(text) || (a.c && a.c.toLowerCase().includes(text)));
-
-            if(filtrats.length === 0) {
-                divSuggeriments.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">No s'ha trobat cap alumne</div>`;
-            } else {
-                filtrats.forEach(a => {
-                    const d = document.createElement('div');
-                    d.className = 'suggestion-item';
-                    d.innerText = `${a.n} (${a.c || 'Sense curs'})`;
-                    d.onclick = function() { seleccionarAlumnePrestec(a.originalIndex, a.n); };
-                    divSuggeriments.appendChild(d);
-                });
-            }
-            divSuggeriments.style.display = 'block';
+            const text = document.getElementById('prestec-alumne-search').value.toLowerCase().trim(); const div = document.getElementById('suggeriments-alumne');
+            if(!text) { div.style.display = 'none'; return; } div.innerHTML = '';
+            let f = db.alumnos.map((a, i) => ({...a, oI: i})).filter(a => a.n.toLowerCase().includes(text));
+            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap alumne</div>`; } else {
+                f.forEach(a => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${a.n} (${a.c || ''})`; d.onclick = function() { triarAlu(a.oI, a.n); }; div.appendChild(d); });
+            } div.style.display = 'block';
         }
-
-        function seleccionarAlumnePrestec(idx, nom) {
-            document.getElementById('prestec-alumne-seleccionat').value = idx;
-            const badge = document.getElementById('badge-alumne');
-            badge.innerText = `Alumne triat: ${nom}`;
-            badge.style.display = 'inline-block';
-            document.getElementById('suggeriments-alumne').style.display = 'none';
-            document.getElementById('prestec-alumne-search').value = '';
-        }
-
+        function triarAlu(idx, nom) { document.getElementById('prestec-alumne-seleccionat').value = idx; const b = document.getElementById('badge-alumne'); b.innerText = `Triat: ${nom}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-alumne').style.display = 'none'; document.getElementById('prestec-alumne-search').value = ''; }
         function filtrarSuggerimentsLlibre() {
-            const input = document.getElementById('prestec-llibre-search');
-            const text = input.value.toLowerCase().trim();
-            const divSuggeriments = document.getElementById('suggeriments-llibre');
-            
-            if(!text) { divSuggeriments.style.display = 'none'; return; }
-            divSuggeriments.innerHTML = '';
-
-            let filtrats = db.libres.map((l, i) => ({...l, originalIndex: i}))
-                                    .filter(l => l.t.toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)) || (l.i && l.i.toLowerCase().includes(text)));
-
-            if(filtrats.length === 0) {
-                divSuggeriments.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">No s'ha trobat cap llibre</div>`;
-            } else {
-                filtrats.forEach(l => {
-                    const d = document.createElement('div');
-                    d.className = 'suggestion-item';
-                    d.innerText = `${l.t} - ${l.a || 'Desconegut'}`;
-                    d.onclick = function() { seleccionarLlibrePrestec(l.originalIndex, l.t); };
-                    divSuggeriments.appendChild(d);
-                });
-            }
-            divSuggeriments.style.display = 'block';
+            const text = document.getElementById('prestec-llibre-search').value.toLowerCase().trim(); const div = document.getElementById('suggeriments-llibre');
+            if(!text) { div.style.display = 'none'; return; } div.innerHTML = '';
+            let f = db.libres.map((l, i) => ({...l, oI: i})).filter(l => l.t.toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)));
+            if(f.length === 0) { div.innerHTML = `<div class="suggestion-item" style="color:gray;">Cap llibre</div>`; } else {
+                f.forEach(l => { const d = document.createElement('div'); d.className = 'suggestion-item'; d.innerText = `${l.t} - ${l.a}`; d.onclick = function() { triarLib(l.oI, l.t); }; div.appendChild(d); });
+            } div.style.display = 'block';
         }
-
-        function seleccionarLlibrePrestec(idx, titol) {
-            document.getElementById('prestec-llibre-seleccionat').value = idx;
-            const badge = document.getElementById('badge-llibre');
-            badge.innerText = `Llibre triat: ${titol}`;
-            badge.style.display = 'inline-block';
-            document.getElementById('suggeriments-llibre').style.display = 'none';
-            document.getElementById('prestec-llibre-search').value = '';
-        }
-
-        // Tancar llistes si es clica fora
-        document.addEventListener('click', function(e) {
-            if(e.target.id !== 'prestec-alumne-search') document.getElementById('suggeriments-alumne').style.display = 'none';
-            if(e.target.id !== 'prestec-llibre-search') document.getElementById('suggeriments-llibre').style.display = 'none';
-        });
-
-        // --- GESTIÓ DE PRÉSTECS ---
+        function triarLib(idx, t) { document.getElementById('prestec-llibre-seleccionat').value = idx; const b = document.getElementById('badge-llibre'); b.innerText = `Triat: ${t}`; b.style.display = 'inline-block'; document.getElementById('suggeriments-llibre').style.display = 'none'; document.getElementById('prestec-llibre-search').value = ''; }
+        document.addEventListener('click', function(e) { if(e.target.id !== 'prestec-alumne-search') document.getElementById('suggeriments-alumne').style.display = 'none'; if(e.target.id !== 'prestec-llibre-search') document.getElementById('suggeriments-llibre').style.display = 'none'; });
         function renderPrestecs() {
-            const llista = document.getElementById('lista-prestecs');
-            const cerca = document.getElementById('search-prestecs').value.toLowerCase();
-            llista.innerHTML = '';
-
-            // Només es mostren els préstecs actius (!p.fi)
-            let actius = db.prestecs.map((p, i) => ({...p, originalIndex: i})).filter(p => !p.fi);
-
+            const llista = document.getElementById('lista-prestecs'); const cerca = document.getElementById('search-prestecs').value.toLowerCase(); llista.innerHTML = '';
+            let actius = db.prestecs.map((p, i) => ({...p, oI: i})).filter(p => !p.fi);
             actius.forEach(p => {
-                const alumneNom = db.alumnos[p.al] ? db.alumnos[p.al].n : "Desconegut";
-                const llibreTitol = db.libres[p.ll] ? db.libres[p.ll].t : "Desconegut";
-
-                if(alumneNom.toLowerCase().includes(cerca) || llibreTitol.toLowerCase().includes(cerca)) {
-                    const row = document.createElement('div');
-                    row.className = 'item-row prestat';
-                    row.innerHTML = `
-                        <div class="item-info">
-                            <h4>${llibreTitol}</h4>
-                            <p><i class="fa-solid fa-user"></i> Prestat a: <strong>${alumneNom}</strong></p>
-                            <p><i class="fa-solid fa-calendar-days"></i> Data d'inici: ${p.in || 'N/A'}</p>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn btn-success" style="padding: 6px 12px; font-size:0.85rem;" onclick="retornarPrestec(${p.originalIndex})">
-                                <i class="fa-solid fa-check"></i> Rebut / Retornat
-                            </button>
-                        </div>
-                    `;
+                const alN = db.alumnos[p.al] ? db.alumnos[p.al].n : "Desconegut"; const llT = db.libres[p.ll] ? db.libres[p.ll].t : "Desconegut";
+                if(alN.toLowerCase().includes(cerca) || llT.toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div'); row.className = 'item-row prestat';
+                    row.innerHTML = `<div class="item-info"><h4>${llT}</h4><p>Prestat a: ${alN}</p><p>Data: ${p.in || ''}</p></div><div class="item-actions"><button class="btn btn-success" style="padding:6px 12px; font-size:0.85rem;" onclick="retornarPrestec(${p.oI})">Retornat</button></div>`;
                     llista.appendChild(row);
                 }
             });
         }
-
         function guardarPrestec() {
-            const alIdx = document.getElementById('prestec-alumne-seleccionat').value;
-            const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
-
-            if(!alIdx || !llIdx) return alert("Si us plau, busca i selecciona un alumne i un llibre dels suggeriments");
-
-            const avui = new Date().toLocaleDateString('ca-ES');
-            const nouPrestec = {
-                al: parseInt(alIdx),
-                ll: parseInt(llIdx),
-                in: avui,
-                fi: ""
-            };
-
-            db.prestecs.push(nouPrestec);
-            enviarServidor('create', 'prestec', nouPrestec);
-            desarDadesLocals();
-
-            // Netejar camps i selectors
-            document.getElementById('prestec-alumne-seleccionat').value = '';
-            document.getElementById('prestec-llibre-seleccionat').value = '';
-            document.getElementById('badge-alumne').style.display = 'none';
-            document.getElementById('badge-llibre').style.display = 'none';
-
+            const alIdx = document.getElementById('prestec-alumne-seleccionat').value; const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
+            if(!alIdx || !llIdx) return alert("Selecciona alumne i llibre de la llista flotant");
+            const avui = new Date().toLocaleDateString('ca-ES'); const nou = { al: parseInt(alIdx), ll: parseInt(llIdx), in: avui, fi: "" };
+            db.prestecs.push(nou); enviarServidor('create', 'prestec', nou); desarDadesLocals();
+            document.getElementById('prestec-alumne-seleccionat').value = ''; document.getElementById('prestec-llibre-seleccionat').value = ''; document.getElementById('badge-alumne').style.display = 'none'; document.getElementById('badge-llibre').style.display = 'none';
             renderPrestecs();
         }
-
-        function retornarPrestec(idx) {
-            const avui = new Date().toLocaleDateString('ca-ES');
-            db.prestecs[idx].fi = avui;
-            enviarServidor('update', 'prestec', { index: idx, ...db.prestecs[idx] });
-            desarDadesLocals();
-            renderPrestecs();
-        }
+        function retornarPrestec(idx) { const avui = new Date().toLocaleDateString('ca-ES'); db.prestecs[idx].fi = avui; enviarServidor('update', 'prestec', { index: idx, ...db.prestecs[idx] }); desarDadesLocals(); renderPrestecs(); }
     </script>
 </body>
 </html>
