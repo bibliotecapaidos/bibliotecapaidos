@@ -3,502 +3,578 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestió Biblioteca Paidos</title>
+    <title>Sistema de Gestió Biblioteca Escola Paidos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #2b6cb0; --success: #2f855a; --danger: #c53030; --warning: #dd6b20; --background: #f7fafc; --card-bg: #ffffff; --text: #2d3748; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
         body { background: var(--background); color: var(--text); padding: 20px; }
         header { background: linear-gradient(135deg, #1a365d, #2b6cb0); color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        @media(max-width: 600px) { .dashboard { grid-template-columns: 1fr; } }
-        .dash-card { background: var(--card-bg); padding: 20px; border-radius: 10px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-left: 5px solid var(--primary); }
-        .dash-card.card-alumnes { border-left-color: var(--warning); }
-        .dash-card.card-prestecs { border-left-color: var(--success); }
-        .dash-card i { font-size: 28px; color: #718096; }
-        .dash-info h4 { font-size: 14px; color: #718096; text-transform: uppercase; letter-spacing: 0.5px; }
-        .dash-info p { font-size: 24px; font-weight: bold; color: var(--text); }
-        .sync-banner { background: #feebc8; border: 1px solid #fbd38d; color: #744210; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .btn { padding: 8px 14px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; font-size: 14px; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-warning { background: var(--warning); color: white; }
-        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-top: 4px solid var(--primary); display: flex; align-items: center; gap: 15px; }
+        .stat-card.alumnes { border-top-color: var(--warning); }
+        .stat-card.prestecs { border-top-color: var(--success); }
+        .stat-icon { font-size: 2rem; color: #a0aec0; }
+        .tabs { display: flex; gap: 10px; border-bottom: 2px solid #e2e8f0; margin-bottom: 25px; }
+        .tab-btn { padding: 12px 24px; border: none; background: none; font-size: 1rem; font-weight: 600; color: #718096; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
         .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 25px; }
         @media(max-width: 900px) { .grid { grid-template-columns: 1fr; } }
-        .card { background: var(--card-bg); padding: 20px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; }
-        .tab-btn { padding: 8px 16px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 600; color: #718096; }
-        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px; }
-        .search-box { width: 100%; padding: 12px; border: 1px solid #cbd5e0; border-radius: 8px; margin-bottom: 20px; font-size: 15px; font-weight: 500; background-color: #ebf8ff; }
-        .list-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e2e8f0; background: white; margin-bottom: 8px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
-        .list-item img { width: 45px; height: 60px; object-fit: cover; border-radius: 4px; margin-right: 15px; }
-        .item-info { flex-grow: 1; }
-        .actions { display: flex; gap: 8px; }
-        .status-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; margin-top: 4px; }
-        .status-ok { background: #c6f6d5; color: #22543d; }
-        .status-empty { background: #fed7d7; color: #742a2a; }
-        .inline-search { margin-bottom: 10px; background-color: #f7fafc !important; border-style: dashed !important; }
+        .card { background: var(--card-bg); padding: 25px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); height: fit-content; }
+        .form-group { margin-bottom: 15px; position: relative; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; }
+        input, select { width: 100%; padding: 10px 12px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 1rem; transition: border-color 0.2s; }
+        input:focus, select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s; }
+        .btn-primary { background: var(--primary); } .btn-primary:hover { background: #2b6cb0; }
+        .btn-success { background: var(--success); } .btn-success:hover { background: #22543d; }
+        .btn-danger { background: var(--danger); } .btn-danger:hover { background: #9b2c2c; }
+        .search-container { margin-bottom: 20px; position: relative; }
+        .search-container i { position: absolute; left: 12px; top: 12px; color: #a0aec0; }
+        .search-input { padding-left: 38px; }
+        .list-container { display: flex; flex-direction: column; gap: 12px; max-height: 600px; overflow-y: auto; padding-right: 5px; }
+        .item-row { background: var(--card-bg); padding: 15px; border-radius: 8px; border-left: 4px solid #cbd5e0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .item-row.disponible { border-left-color: var(--success); }
+        .item-row.prestat { border-left-color: var(--warning); }
+        .item-info h4 { margin-bottom: 4px; font-size: 1.05rem; }
+        .item-info p { font-size: 0.85rem; color: #718096; }
+        .item-actions { display: flex; gap: 8px; }
+        .action-btn { border: none; padding: 8px; border-radius: 6px; cursor: pointer; color: white; transition: opacity 0.2s; }
+        .action-btn:hover { opacity: 0.9; }
+        .action-edit { background: var(--warning); }
+        .action-delete { background: var(--danger); }
+        
+        /* Estils Cercador Predictiu Predictius */
+        .autocomplete-suggestions { position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #cbd5e0; border-top: none; border-radius: 0 0 6px 6px; max-height: 200px; overflow-y: auto; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .suggestion-item { padding: 10px 12px; cursor: pointer; font-size: 0.95rem; border-bottom: 1px solid #edf2f7; }
+        .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: #edf2f7; color: var(--primary); }
+        .selected-badge { display: inline-block; background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.85rem; margin-top: 5px; font-weight: 600; color: var(--primary); }
+        
+        .sync-banner { background: #feebc8; border: 1px solid #fbd38d; color: #c05621; padding: 12px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; }
+        .sync-banner button { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>📚 Sistema de Gestió Biblioteca Escola Paidos</h1>
-        <p>Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
-    </header>
-
-    <div class="dashboard">
-        <div class="dash-card card-llibres">
-            <i class="fa-solid fa-book"></i>
-            <div class="dash-info">
-                <h4>Total Llibres</h4>
-                <p id="dash-llibres">0</p>
-            </div>
-        </div>
-        <div class="dash-card card-alumnes">
-            <i class="fa-solid fa-graduation-cap"></i>
-            <div class="dash-info">
-                <h4>Alumnes Registrats</h4>
-                <p id="dash-alumnes">0</p>
-            </div>
-        </div>
-        <div class="dash-card card-prestecs">
-            <i class="fa-solid fa-handshake"></i>
-            <div class="dash-info">
-                <h4>Préstecs Actius</h4>
-                <p id="dash-prestecs">0</p>
-            </div>
-        </div>
+    <div class="sync-banner" id="initialSyncBanner">
+        <div><strong>Manteniment:</strong> Si notes desequilibris o errors de recompte, prem aquest botó per a buidar la memòria i forçar sincronització.</div>
+        <button onclick="ejecutarSincronizacionInicial()"><i class="fa-solid fa-cloud-arrow-up"></i> Forçar Sincronització</button>
     </div>
 
-    <div class="sync-banner" id="initialSyncBanner">
-        <div>
-            <strong>🔄 Inicialitzar Base de Dades:</strong> Si el teu Google Sheets està totalment buit, prem aquest botó per deixar creades les columnes netes.
+    <header>
+        <h1 id="mainTitle">Sistema de Gestió Biblioteca Escola Paidos</h1>
+        <p style="font-size: 0.9rem; opacity: 0.9; margin-top: 5px;">Préstecs, llibres i control d'alumnes enllaçat amb Google Sheets</p>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fa-solid fa-book"></i></div>
+            <div><p style="font-size: 0.85rem; color: #718096;">TOTAL LLIBRES</p><h2 id="stat-libros">0</h2></div>
         </div>
-        <button class="btn btn-success" onclick="executarSincronitzacioInicial()">
-            <i class="fa-solid fa-cloud-arrow-up"></i> Activar 3 Pestanyes Netes
-        </button>
+        <div class="stat-card alumnes">
+            <div class="stat-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+            <div><p style="font-size: 0.85rem; color: #718096;">ALUMNES REGISTRATS</p><h2 id="stat-alumnos">0</h2></div>
+        </div>
+        <div class="stat-card prestecs">
+            <div class="stat-icon"><i class="fa-solid fa-handshake"></i></div>
+            <div><p style="font-size: 0.85rem; color: #718096;">PRÉSTECS ACTIUS</p><h2 id="stat-prestecs">0</h2></div>
+        </div>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" id="btn-tab-llibres" onclick="switchTab('llibres')"><i class="fa-solid fa-book"></i> Llibres</button>
-        <button class="tab-btn" id="btn-tab-alumnes" onclick="switchTab('alumnes')"><i class="fa-solid fa-graduation-cap"></i> Alumnes</button>
+        <button class="tab-btn active" id="btn-tab-libres" onclick="switchTab('libres')"><i class="fa-solid fa-book"></i> Llibres</button>
+        <button class="tab-btn" id="btn-tab-alumnos" onclick="switchTab('alumnos')"><i class="fa-solid fa-graduation-cap"></i> Alumnes</button>
         <button class="tab-btn" id="btn-tab-prestecs" onclick="switchTab('prestecs')"><i class="fa-solid fa-handshake"></i> Préstecs</button>
     </div>
 
-    <div class="grid">
-        <div class="card">
-            <div id="form-llibres">
-                <h3 id="titol-form-llibre">Afegir Nou Llibre</h3><br>
+    <!-- SECCIÓ LLIBRES -->
+    <div id="section-libres" class="content-section active">
+        <div class="grid">
+            <div class="card">
+                <h3 id="titolo-form-libres" style="margin-bottom: 15px;">Afegir Nou Llibre</h3>
                 <input type="hidden" id="lib-index" value="-1">
                 <div class="form-group">
                     <label>Títol del llibre</label>
-                    <input type="text" id="lib-titol" placeholder="Ex: Shrek">
+                    <input type="text" id="lib-titol" placeholder="Ex: El diari de Greg">
                 </div>
                 <div class="form-group">
                     <label>Autor</label>
-                    <input type="text" id="lib-autor" placeholder="Ex: Ellen Weiss">
+                    <input type="text" id="lib-autor" placeholder="Ex: Jeff Kinney">
                 </div>
                 <div class="form-group">
                     <label>ISBN</label>
-                    <input type="text" id="lib-isbn" placeholder="Ex: 978-8420638546">
+                    <input type="text" id="lib-isbn" placeholder="Ex: 978-8427204638">
                 </div>
                 <div class="form-group">
-                    <label>ID Imatge Cloudinary</label>
-                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge de la portada">
+                    <label>ID Imatge Cloudinary (Opcional)</label>
+                    <input type="text" id="lib-imatge" placeholder="Codi de la imatge o buit">
                 </div>
                 <div class="form-group">
                     <label>Unitats Disponibles</label>
                     <input type="number" id="lib-quantitat" value="1" min="1">
                 </div>
-                <button class="btn btn-primary" onclick="guardarLlibre()"><i class="fa-solid fa-bookmark"></i> <span id="btn-text-llibre">Desar Llibre i Enviar</span></button>
-                <button class="btn btn-danger" id="btn-cancelar-llibre" style="display:none; margin-top:5px;" onclick="cancelarEdicioLlibre()">Cancelar Edició</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="guardarLibro()"><i class="fa-solid fa-save"></i> Desar Llibre</button>
+                    <button class="btn btn-danger" id="btn-cancel-lib" style="display:none;" onclick="resetFormLibro()">Cancel·lar</button>
+                </div>
             </div>
+            <div>
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-libres" class="search-input" placeholder="Cerca per títol, autor o ISBN..." oninput="renderLibres()">
+                </div>
+                <div id="lista-libres" class="list-container"></div>
+            </div>
+        </div>
+    </div>
 
-            <div id="form-alumnes" style="display:none;">
-                <h3 id="titol-form-alumne">Afegir Nou Alumne</h3><br>
+    <!-- SECCIÓ ALUMNES -->
+    <div id="section-alumnos" class="content-section">
+        <div class="grid">
+            <div class="card">
+                <h3 id="titolo-form-alumnos" style="margin-bottom: 15px;">Afegir Nou Alumne</h3>
                 <input type="hidden" id="alu-index" value="-1">
                 <div class="form-group">
-                    <label>Nom Complet (i cognoms)</label>
-                    <input type="text" id="alu-nom" placeholder="Ex: Pol Alegre Berna">
+                    <label>Nom i Cognoms</label>
+                    <input type="text" id="alu-nom" placeholder="Ex: Marc Garzón">
                 </div>
                 <div class="form-group">
                     <label>Curs / Classe</label>
                     <input type="text" id="alu-curs" placeholder="Ex: 5è A">
                 </div>
-                <button class="btn btn-primary" onclick="guardarAlumne()"><i class="fa-solid fa-user-plus"></i> <span id="btn-text-alumne">Desar Alumne i Enviar</span></button>
-                <button class="btn btn-danger" id="btn-cancelar-alumne" style="display:none; margin-top:5px;" onclick="cancelarEdicioAlumne()">Cancelar Edició</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary" onclick="guardarAlumno()"><i class="fa-solid fa-save"></i> Desar Alumne</button>
+                    <button class="btn btn-danger" id="btn-cancel-alu" style="display:none;" onclick="resetFormAlumno()">Cancel·lar</button>
+                </div>
             </div>
-
-            <div id="form-prestecs" style="display:none;">
-                <h3>Registrar Nou Préstec</h3><br>
-                
-                <div class="form-group">
-                    <label>🔍 Buscar i triar Alumne (Nom/Curs)</label>
-                    <input type="text" id="buscar-prestec-alumne" class="form-group input inline-search" placeholder="Escriu per filtrar alumnes..." oninput="filtrarSelectorsPrestec()">
-                    <select id="pres-alumne">
-                        <option value="">-- Selecciona un alumne --</option>
-                    </select>
+            <div>
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-alumnos" class="search-input" placeholder="Cerca alumne per nom o curs..." oninput="renderAlumnos()">
                 </div>
-                
-                <div class="form-group">
-                    <label>🔍 Buscar i triar Llibre (Títol/Autor/ISBN)</label>
-                    <input type="text" id="buscar-prestec-llibre" class="form-group input inline-search" placeholder="Escriu per filtrar llibres..." oninput="filtrarSelectorsPrestec()">
-                    <select id="pres-llibre">
-                        <option value="">-- Selecciona un llibre --</option>
-                    </select>
-                </div>
-                
-                <button class="btn btn-success" onclick="guardarPrestec()"><i class="fa-solid fa-key"></i> Assignar Préstec Oficial</button>
+                <div id="lista-alumnos" class="list-container"></div>
             </div>
         </div>
+    </div>
 
-        <div class="card">
-            <input type="text" id="cercador" class="search-box" placeholder="🔍 Cerca per títol, autor o ISBN..." oninput="filtrarLlista()">
-            <div id="llistat-dades"></div>
+    <!-- SECCIÓ PRÉSTECS -->
+    <div id="section-prestecs" class="content-section">
+        <div class="grid">
+            <div class="card">
+                <h3 style="margin-bottom: 15px;">Registrar Préstec</h3>
+                
+                <!-- CERCADOR PREDICTIU D'ALUMNES -->
+                <div class="form-group">
+                    <label>🔍 Buscar i triar Alumne</label>
+                    <input type="text" id="prestec-alumne-search" placeholder="Escriu nom, cognom o curs..." autocomplete="off" oninput="filtrarSuggerimentsAlumne()">
+                    <div id="suggeriments-alumne" class="autocomplete-suggestions" style="display: none;"></div>
+                    <input type="hidden" id="prestec-alumne-seleccionat">
+                    <div id="badge-alumne" class="selected-badge" style="display: none;"></div>
+                </div>
+
+                <!-- CERCADOR PREDICTIU DE LLIBRES -->
+                <div class="form-group">
+                    <label>🔍 Buscar i triar Llibre</label>
+                    <input type="text" id="prestec-llibre-search" placeholder="Escriu títol, autor o ISBN..." autocomplete="off" oninput="filtrarSuggerimentsLlibre()">
+                    <div id="suggeriments-llibre" class="autocomplete-suggestions" style="display: none;"></div>
+                    <input type="hidden" id="prestec-llibre-seleccionat">
+                    <div id="badge-llibre" class="selected-badge" style="display: none;"></div>
+                </div>
+
+                <button class="btn btn-success" onclick="guardarPrestec()"><i class="fa-solid fa-plus"></i> Realitzar Préstec</button>
+            </div>
+            <div>
+                <div class="search-container">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-prestecs" class="search-input" placeholder="Filtrar préstecs actius..." oninput="renderPrestecs()">
+                </div>
+                <div id="lista-prestecs" class="list-container"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwL5VtkpHfT5aCQOC-lflkT3GokjBErwzGB9OQtQ0FUtv38tc5CdS0bOPNyNoMfemDJ/exec";
-        let currentTab = 'llibres';
+        // CONFIGURACIÓ DE L'SCRIPT WEB DE GOOGLE SHEETS
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwYgXfLd7vY_M1ZlE7H_9UuK8KPrg1K0G5U7bL2KxH8XN5C7H9X5H6K_g/exec";
 
-        let db = {
-            llibres: [],
-            alumnes: [],
-            prestecs: []
-        };
+        let db = { libres: [], alumnos: [], prestecs: [] };
 
         window.onload = function() {
-            carregarDadesDeDrive();
+            carregarDadesLocals();
+            sincronitzarAmbServidor();
         };
 
-        // ==========================================
-        // FUNCIONS D'ORDENACIÓ AUTOMÀTICA
-        // ==========================================
-        function ordenarLlibres() {
-            db.llibres.sort((a, b) => {
-                if (!a.t) return 1;
-                if (!b.t) return -1;
-                return a.t.localeCompare(b.t, 'ca');
+        function carregarDadesLocals() {
+            const dades = localStorage.getItem('biblioteca_db');
+            if(dades) {
+                db = JSON.parse(dades);
+                actualitzarComptadors();
+                renderTot();
+            }
+        }
+
+        function desarDadesLocals() {
+            localStorage.setItem('biblioteca_db', JSON.stringify(db));
+            actualitzarComptadors();
+        }
+
+        function sincronitzarAmbServidor() {
+            fetch(`${SCRIPT_URL}?action=read`)
+            .then(res => res.json())
+            .then(data => {
+                if(data) {
+                    db.libres = data.libres || [];
+                    db.alumnos = data.alumnos || [];
+                    db.prestecs = data.prestecs || [];
+                    desarDadesLocals();
+                    renderTot();
+                }
+            }).catch(err => console.error("Error sincronitzant:", err));
+        }
+
+        function enviarServidor(accio, tipus, dades) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: accio, type: tipus, data: dades })
+            }).then(() => {
+                setTimeout(sincronitzarAmbServidor, 800);
             });
         }
 
-        function ordenarAlumnes() {
-            db.alumnes.sort((a, b) => {
-                if (!a.c) return 1;
-                if (!b.c) return -1;
-                const comparacioCurs = a.c.localeCompare(b.c, 'ca', { numeric: true });
-                if (comparacioCurs !== 0) return comparacioCurs;
-                
-                if (!a.n) return 1;
-                if (!b.n) return -1;
-                return a.n.localeCompare(b.n, 'ca');
-            });
+        function ejecutarSincronizacionInicial() {
+            if(confirm("Vols forçar una descàrrega neta de dades des de Google Sheets?")) {
+                localStorage.clear();
+                sincronitzarAmbServidor();
+            }
         }
 
-        // ==========================================
-        // CONTROL DE PESTANYES
-        // ==========================================
+        function actualitzarComptadors() {
+            document.getElementById('stat-libros').innerText = db.libres.reduce((acc, l) => acc + parseInt(l.q || 1), 0);
+            document.getElementById('stat-alumnos').innerText = db.alumnos.length;
+            document.getElementById('stat-prestecs').innerText = db.prestecs.filter(p => !p.fi).length;
+        }
+
         function switchTab(tab) {
-            currentTab = tab;
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('btn-tab-' + tab).classList.add('active');
-            
-            document.getElementById('form-llibres').style.display = tab === 'llibres' ? 'block' : 'none';
-            document.getElementById('form-alumnes').style.display = tab === 'alumnes' ? 'block' : 'none';
-            document.getElementById('form-prestecs').style.display = tab === 'prestecs' ? 'block' : 'none';
-            
-            const cercador = document.getElementById('cercador');
-            if(tab === 'llibres') cercador.placeholder = "🔍 Cerca llibre per títol, autor o ISBN...";
-            if(tab === 'alumnes') cercador.placeholder = "🔍 Cerca alumne per nom o curs...";
-            if(tab === 'prestecs') cercador.placeholder = "🔍 Cerca préstec per alumne o llibre...";
-            
-            cercador.value = '';
-            actualitzarInterficie();
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(`btn-tab-${tab}`).classList.add('active');
+            document.getElementById(`section-${tab}`).classList.add('active');
+            renderTot();
         }
 
-        // ==========================================
-        // REFRESC VISUAL DE LA INTERFICIE
-        // ==========================================
-        function actualitzarInterficie() {
-            document.getElementById('dash-llibres').innerText = db.llibres.length;
-            document.getElementById('dash-alumnes').innerText = db.alumnes.length;
-            document.getElementById('dash-prestecs').innerText = db.prestecs.length;
-            
-            // Reordenem dades sempre abans de dibuixar
-            ordenarLlibres();
-            ordenarAlumnes();
-            
-            filtrarLlista();
-            actualitzarDesplegablesPréstecs();
+        function renderTot() {
+            renderLibres();
+            renderAlumnos();
+            renderPrestecs();
         }
 
-        // ==========================================
-        // FILTRAT DE LES LLISTES PRINCIPALS
-        // ==========================================
-        function filtrarLlista() {
-            const llistat = document.getElementById('llistat-dades');
-            llistat.innerHTML = '';
-            const query = document.getElementById('cercador').value.toLowerCase();
+        // --- APARTAT LLIBRES (ORDENATS ALFABÈTICAMENT) ---
+        function renderLibres() {
+            const llista = document.getElementById('lista-libres');
+            const cerca = document.getElementById('search-libres').value.toLowerCase();
+            llista.innerHTML = '';
 
-            if (currentTab === 'llibres') {
-                db.llibres.forEach((l, originalIdx) => {
-                    const compleixFiltre = (l.t && l.t.toLowerCase().includes(query)) || 
-                                          (l.a && l.a.toLowerCase().includes(query)) || 
-                                          (l.i && l.i.toLowerCase().includes(query));
-                    
-                    if (compleixFiltre) {
-                        llistat.innerHTML += `
-                            <div class="list-item">
-                                <img src="${obtenirRutaImatge(l.c)}" onerror="this.src='https://placehold.co/45x60?text=No+Img'">
-                                <div class="item-info">
-                                    <strong>${l.t}</strong><br>
-                                    <small>${l.a} | ISBN: ${l.i}</small><br>
-                                    <span class="status-badge status-ok">Exemplars: ${l.q || 1}</span>
-                                </div>
-                                <div class="actions">
-                                    <button class="btn btn-warning" onclick="carregarLlibrePerEditar(${originalIdx})"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-danger" onclick="esborrarElement('llibres', ${originalIdx})"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </div>`;
-                    }
-                });
-            } else if (currentTab === 'alumnes') {
-                db.alumnes.forEach((a, originalIdx) => {
-                    const compleixFiltre = (a.n && a.n.toLowerCase().includes(query)) || 
-                                          (a.c && a.c.toLowerCase().includes(query));
-                    
-                    if (compleixFiltre) {
-                        llistat.innerHTML += `
-                            <div class="list-item">
-                                <div class="item-info">
-                                    <strong>${a.n}</strong><br>
-                                    <small>Curs/Classe: ${a.c}</small>
-                                </div>
-                                <div class="actions">
-                                    <button class="btn btn-warning" onclick="carregarAlumnePerEditar(${originalIdx})"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="btn btn-danger" onclick="esborrarElement('alumnes', ${originalIdx})"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </div>`;
-                    }
-                });
-            } else if (currentTab === 'prestecs') {
-                db.prestecs.forEach((p, originalIdx) => {
-                    const compleixFiltre = (p.a && p.a.toLowerCase().includes(query)) || 
-                                          (p.l && p.l.toLowerCase().includes(query));
-                    
-                    if (compleixFiltre) {
-                        llistat.innerHTML += `
-                            <div class="list-item">
-                                <div class="item-info">
-                                    <strong>🤝 Llibre: ${p.l}</strong><br>
-                                    <small>Alumne: ${p.a} | Data: ${p.d}</small>
-                                </div>
-                                <button class="btn btn-danger" onclick="esborrarElement('prestecs', ${originalIdx})"><i class="fa-solid fa-arrow-rotate-left"></i> Retornar</button>
-                            </div>`;
-                    }
-                });
-            }
-        }
+            let llistaOrdenada = [...db.libres].map((l, i) => ({...l, originalIndex: i}));
+            llistaOrdenada.sort((a, b) => (a.t || "").localeCompare(b.t || ""));
 
-        // ==========================================
-        // BUSCADORS INTERNS DEL FORMULARI DE PRÉSTECS
-        // ==========================================
-        function filtrarSelectorsPrestec() {
-            const filtreAlumne = document.getElementById('buscar-prestec-alumne').value.toLowerCase();
-            const filtreLlibre = document.getElementById('buscar-prestec-llibre').value.toLowerCase();
-            
-            const selectAlu = document.getElementById('pres-alumne');
-            const selectLlib = document.getElementById('pres-llibre');
-            
-            // Filtrar Alumnes en el select
-            selectAlu.innerHTML = '<option value="">-- Selecciona un alumne --</option>';
-            db.alumnes.forEach(a => {
-                if ((a.n && a.n.toLowerCase().includes(filtreAlumne)) || (a.c && a.c.toLowerCase().includes(filtreAlumne))) {
-                    selectAlu.innerHTML += `<option value="${a.n}">${a.n} (${a.c})</option>`;
-                }
-            });
-            
-            // Filtrar Llibres en el select
-            selectLlib.innerHTML = '<option value="">-- Selecciona un llibre --</option>';
-            db.llibres.forEach(l => {
-                if ((l.t && l.t.toLowerCase().includes(filtreLlibre)) || (l.a && l.a.toLowerCase().includes(filtreLlibre)) || (l.i && l.i.toLowerCase().includes(filtreLlibre))) {
-                    selectLlib.innerHTML += `<option value="${l.t}">${l.t} - ${l.a}</option>`;
+            llistaOrdenada.forEach(l => {
+                if((l.t||'').toLowerCase().includes(cerca) || (l.a||'').toLowerCase().includes(cerca) || (l.i||'').toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div');
+                    row.className = `item-row disponible`;
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <h4>${l.t}</h4>
+                            <p>${l.a} | ISBN: ${l.i || 'N/A'}</p>
+                            <p><strong style="color:var(--success)">Exemplars Totals: ${l.q || 1}</strong></p>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn action-edit" onclick="editarLibro(${l.originalIndex})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn action-delete" onclick="eliminarLibro(${l.originalIndex})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    llista.appendChild(row);
                 }
             });
         }
 
-        function actualitzarDesplegablesPréstecs() {
-            // Aquesta funció es crida per defecte en carregar la interfície sense filtre inicial
-            const filtreAlu = document.getElementById('buscar-prestec-alumne').value;
-            const filtreLlib = document.getElementById('buscar-prestec-llibre').value;
-            if(!filtreAlu && !filtreLlib) {
-                filtrarSelectorsPrestec();
+        function guardarLibro() {
+            const idx = parseInt(document.getElementById('lib-index').value);
+            const llibre = {
+                t: document.getElementById('lib-titol').value.trim(),
+                a: document.getElementById('lib-autor').value.trim(),
+                i: document.getElementById('lib-isbn').value.trim(),
+                img: document.getElementById('lib-imatge').value.trim(),
+                q: parseInt(document.getElementById('lib-quantitat').value) || 1
+            };
+
+            if(!llibre.t) return alert("El títol és obligatori");
+
+            if(idx === -1) {
+                db.libres.push(llibre);
+                enviarServidor('create', 'libro', llibre);
+            } else {
+                db.libres[idx] = llibre;
+                enviarServidor('update', 'libro', { index: idx, ...llibre });
             }
+            desarDadesLocals();
+            resetFormLibro();
+            renderLibres();
         }
 
-        // ==========================================
-        // OPERACIONS AMB LLIBRES
-        // ==========================================
-        function carregarLlibrePerEditar(originalIdx) {
-            const l = db.llibres[originalIdx];
-            document.getElementById('lib-index').value = originalIdx;
-            document.getElementById('lib-titol').value = l.t || '';
+        function editarLibro(idx) {
+            const l = db.libres[idx];
+            document.getElementById('lib-index').value = idx;
+            document.getElementById('lib-titol').value = l.t;
             document.getElementById('lib-autor').value = l.a || '';
             document.getElementById('lib-isbn').value = l.i || '';
-            document.getElementById('lib-imatge').value = l.c || '';
+            document.getElementById('lib-imatge').value = l.img || '';
             document.getElementById('lib-quantitat').value = l.q || 1;
-            
-            document.getElementById('titol-form-llibre').innerText = "Modificar Llibre";
-            document.getElementById('btn-text-llibre').innerText = "Guardar Canvis";
-            document.getElementById('btn-cancelar-llibre').style.display = "inline-block";
+            document.getElementById('titolo-form-libres').innerText = "Modificar Llibre";
+            document.getElementById('btn-cancel-lib').style.display = 'block';
         }
 
-        function cancelarEdicioLlibre() {
+        function resetFormLibro() {
             document.getElementById('lib-index').value = "-1";
             document.getElementById('lib-titol').value = '';
             document.getElementById('lib-autor').value = '';
             document.getElementById('lib-isbn').value = '';
             document.getElementById('lib-imatge').value = '';
-            document.getElementById('lib-quantitat').value = 1;
-            document.getElementById('titol-form-llibre').innerText = "Afegir Nou Llibre";
-            document.getElementById('btn-text-llibre').innerText = "Desar Llibre i Enviar";
-            document.getElementById('btn-cancelar-llibre').style.display = "none";
+            document.getElementById('lib-quantitat').value = '1';
+            document.getElementById('titolo-form-libres').innerText = "Afegir Nou Llibre";
+            document.getElementById('btn-cancel-lib').style.display = 'none';
         }
 
-        function guardarLlibre() {
-            const idx = parseInt(document.getElementById('lib-index').value);
-            const llibreData = { 
-                t: document.getElementById('lib-titol').value.trim(), 
-                a: document.getElementById('lib-autor').value.trim(), 
-                i: document.getElementById('lib-isbn').value.trim(), 
-                c: document.getElementById('lib-imatge').value.trim(), 
-                q: parseInt(document.getElementById('lib-quantitat').value) || 1 
-            };
-            if(!llibreData.t) return alert("El títol és obligatori");
-            
-            if(idx === -1) { 
-                db.llibres.push(llibreData); 
-            } else { 
-                db.llibres[idx] = llibreData; 
-            }
-            
-            cancelarEdicioLlibre();
-            actualitzarInterficie();
-            pujarADrive({ llibres: db.llibres });
-        }
-
-        // ==========================================
-        // OPERACIONS AMB ALUMNES
-        // ==========================================
-        function carregarAlumnePerEditar(originalIdx) {
-            const a = db.alumnes[originalIdx];
-            document.getElementById('alu-index').value = originalIdx;
-            document.getElementById('alu-nom').value = a.n || '';
-            document.getElementById('alu-curs').value = a.c || '';
-            
-            document.getElementById('titol-form-alumne').innerText = "Modificar Alumne";
-            document.getElementById('btn-text-alumne').innerText = "Guardar Canvis";
-            document.getElementById('btn-cancelar-alumne').style.display = "inline-block";
-        }
-
-        function cancelarEdicioAlumne() {
-            document.getElementById('alu-index').value = "-1";
-            document.getElementById('alu-nom').value = '';
-            document.getElementById('alu-curs').value = '';
-            document.getElementById('titol-form-alumne').innerText = "Afegir Nou Alumne";
-            document.getElementById('btn-text-alumne').innerText = "Desar Alumne i Enviar";
-            document.getElementById('btn-cancelar-alumne').style.display = "none";
-        }
-
-        function guardarAlumne() {
-            const idx = parseInt(document.getElementById('alu-index').value);
-            const alumneData = { 
-                n: document.getElementById('alu-nom').value.trim(), 
-                c: document.getElementById('alu-curs').value.trim() 
-            };
-            if(!alumneData.n) return alert("El nom és obligatori");
-            
-            if(idx === -1) { 
-                db.alumnes.push(alumneData); 
-            } else { 
-                db.alumnes[idx] = alumneData; 
-            }
-            
-            cancelarEdicioAlumne();
-            actualitzarInterficie();
-            pujarADrive({ alumnes: db.alumnes });
-        }
-
-        // ==========================================
-        // GESTIÓ DE PRÉSTECS
-        // ==========================================
-        function guardarPrestec() {
-            const alumneSel = document.getElementById('pres-alumne').value;
-            const llibreSel = document.getElementById('pres-llibre').value;
-            if(!alumneSel || !llibreSel) return alert("Falta seleccionar alumne o llibre");
-            
-            const nouPrestec = { a: alumneSel, l: llibreSel, d: new Date().toLocaleDateString('ca-ES') };
-            db.prestecs.push(nouPrestec);
-            
-            document.getElementById('buscar-prestec-alumne').value = '';
-            document.getElementById('buscar-prestec-llibre').value = '';
-            
-            actualitzarInterficie();
-            pujarADrive({ prestecs: db.prestecs });
-            alert("Préstec registrat amb èxit!");
-        }
-
-        // ==========================================
-        // ESBORRAR ELEMENT GENERAL (ID REAL)
-        // ==========================================
-        function esborrarElement(seccio, originalIdx) {
-            const msg = seccio === 'prestecs' ? "Vols retornar aquest llibre?" : "Segur que vols esborrar aquest element?";
-            if(confirm(msg)) {
-                db[seccio].splice(originalIdx, 1);
-                actualitzarInterficie();
-                let f = {}; f[seccio] = db[seccio];
-                pujarADrive(f);
+        function eliminarLibro(idx) {
+            if(confirm(`Segur que vols eliminar "${db.libres[idx].t}"?`)) {
+                enviarServidor('delete', 'libro', { index: idx });
+                db.libres.splice(idx, 1);
+                desarDadesLocals();
+                renderLibres();
             }
         }
 
-        // ==========================================
-        // ENLLAÇ AMB GOOGLE DRIVE & CLOUDINARY
-        // ==========================================
-        function obtenirRutaImatge(codi) {
-            if(!codi) return '';
-            if(codi.startsWith('http')) return codi;
-            return `https://res.cloudinary.com/df6w9g7un/image/upload/v1715617200/${codi}.jpg`;
-        }
+        // --- APARTAT ALUMNES ---
+        function renderAlumnos() {
+            const llista = document.getElementById('lista-alumnos');
+            const cerca = document.getElementById('search-alumnos').value.toLowerCase();
+            llista.innerHTML = '';
 
-        function pujarADrive(dades) {
-            fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dades) });
-        }
+            let llistaOrdenada = [...db.alumnos].map((a, i) => ({...a, originalIndex: i}));
+            llistaOrdenada.sort((a, b) => (a.n || "").localeCompare(b.n || ""));
 
-        function carregarDadesDeDrive() {
-            fetch(SCRIPT_URL).then(r => r.json()).then(data => {
-                let c = false;
-                if(data.llibres && data.llibres.length > 0) { db.llibres = data.llibres; c = true; }
-                if(data.alumnes && data.alumnes.length > 0) { db.alumnes = data.alumnes; c = true; }
-                if(data.prestecs && data.prestecs.length > 0) { db.prestecs = data.prestecs; c = true; }
-                if(c) { document.getElementById('initialSyncBanner').style.display = 'none'; }
-                actualitzarInterficie();
+            llistaOrdenada.forEach(a => {
+                if((a.n||'').toLowerCase().includes(cerca) || (a.c||'').toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div');
+                    row.className = 'item-row disponible';
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <h4>${a.n}</h4>
+                            <p>Classe: ${a.c}</p>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn action-edit" onclick="editarAlumno(${a.originalIndex})"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn action-delete" onclick="eliminarAlumno(${a.originalIndex})"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    `;
+                    llista.appendChild(row);
+                }
             });
         }
 
-        function executarSincronitzacioInicial() {
-            if(confirm("Vols inicialitzar la base de dades buida al teu Sheets?")) {
-                fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(db) }).then(() => {
-                    alert("🎉 Columnes de treball creades al teu full de càlcul!");
-                    document.getElementById('initialSyncBanner').style.display = 'none';
+        function guardarAlumno() {
+            const idx = parseInt(document.getElementById('alu-index').value);
+            const alumne = {
+                n: document.getElementById('alu-nom').value.trim(),
+                c: document.getElementById('alu-curs').value.trim()
+            };
+
+            if(!alumne.n) return alert("El nom és obligatori");
+
+            if(idx === -1) {
+                db.alumnos.push(alumne);
+                enviarServidor('create', 'alumno', alumne);
+            } else {
+                db.alumnos[idx] = alumne;
+                enviarServidor('update', 'alumno', { index: idx, ...alumne });
+            }
+            desarDadesLocals();
+            resetFormAlumno();
+            renderAlumnos();
+        }
+
+        function editarAlumno(idx) {
+            const a = db.alumnos[idx];
+            document.getElementById('alu-index').value = idx;
+            document.getElementById('alu-nom').value = a.n;
+            document.getElementById('alu-curs').value = a.c || '';
+            document.getElementById('titolo-form-alumnos').innerText = "Modificar Alumne";
+            document.getElementById('btn-cancel-alu').style.display = 'block';
+        }
+
+        function resetFormAlumno() {
+            document.getElementById('alu-index').value = "-1";
+            document.getElementById('alu-nom').value = '';
+            document.getElementById('alu-curs').value = '';
+            document.getElementById('titolo-form-alumnos').innerText = "Afegir Nou Alumne";
+            document.getElementById('btn-cancel-alu').style.display = 'none';
+        }
+
+        function eliminarAlumno(idx) {
+            if(confirm(`Segur que vols eliminar l'alumne/a "${db.alumnos[idx].n}"?`)) {
+                enviarServidor('delete', 'alumno', { index: idx });
+                db.alumnos.splice(idx, 1);
+                desarDadesLocals();
+                renderAlumnos();
+            }
+        }
+
+        // --- FILTRES PROGRESIUS / CERCADORS PREDICTIUS PER A PRÉSTECS ---
+        function filtrarSuggerimentsAlumne() {
+            const input = document.getElementById('prestec-alumne-search');
+            const text = input.value.toLowerCase().trim();
+            const divSuggeriments = document.getElementById('suggeriments-alumne');
+            
+            if(!text) { divSuggeriments.style.display = 'none'; return; }
+            divSuggeriments.innerHTML = '';
+
+            let filtrats = db.alumnos.map((a, i) => ({...a, originalIndex: i}))
+                                     .filter(a => a.n.toLowerCase().includes(text) || (a.c && a.c.toLowerCase().includes(text)));
+
+            if(filtrats.length === 0) {
+                divSuggeriments.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">No s'ha trobat cap alumne</div>`;
+            } else {
+                filtrats.forEach(a => {
+                    const d = document.createElement('div');
+                    d.className = 'suggestion-item';
+                    d.innerText = `${a.n} (${a.c || 'Sense curs'})`;
+                    d.onclick = function() { seleccionarAlumnePrestec(a.originalIndex, a.n); };
+                    divSuggeriments.appendChild(d);
                 });
             }
+            divSuggeriments.style.display = 'block';
+        }
+
+        function seleccionarAlumnePrestec(idx, nom) {
+            document.getElementById('prestec-alumne-seleccionat').value = idx;
+            const badge = document.getElementById('badge-alumne');
+            badge.innerText = `Alumne triat: ${nom}`;
+            badge.style.display = 'inline-block';
+            document.getElementById('suggeriments-alumne').style.display = 'none';
+            document.getElementById('prestec-alumne-search').value = '';
+        }
+
+        function filtrarSuggerimentsLlibre() {
+            const input = document.getElementById('prestec-llibre-search');
+            const text = input.value.toLowerCase().trim();
+            const divSuggeriments = document.getElementById('suggeriments-llibre');
+            
+            if(!text) { divSuggeriments.style.display = 'none'; return; }
+            divSuggeriments.innerHTML = '';
+
+            let filtrats = db.libres.map((l, i) => ({...l, originalIndex: i}))
+                                    .filter(l => l.t.toLowerCase().includes(text) || (l.a && l.a.toLowerCase().includes(text)) || (l.i && l.i.toLowerCase().includes(text)));
+
+            if(filtrats.length === 0) {
+                divSuggeriments.innerHTML = `<div class="suggestion-item" style="color:gray; cursor:default;">No s'ha trobat cap llibre</div>`;
+            } else {
+                filtrats.forEach(l => {
+                    const d = document.createElement('div');
+                    d.className = 'suggestion-item';
+                    d.innerText = `${l.t} - ${l.a || 'Desconegut'}`;
+                    d.onclick = function() { seleccionarLlibrePrestec(l.originalIndex, l.t); };
+                    divSuggeriments.appendChild(d);
+                });
+            }
+            divSuggeriments.style.display = 'block';
+        }
+
+        function seleccionarLlibrePrestec(idx, titol) {
+            document.getElementById('prestec-llibre-seleccionat').value = idx;
+            const badge = document.getElementById('badge-llibre');
+            badge.innerText = `Llibre triat: ${titol}`;
+            badge.style.display = 'inline-block';
+            document.getElementById('suggeriments-llibre').style.display = 'none';
+            document.getElementById('prestec-llibre-search').value = '';
+        }
+
+        // Tancar llistes si es clica fora
+        document.addEventListener('click', function(e) {
+            if(e.target.id !== 'prestec-alumne-search') document.getElementById('suggeriments-alumne').style.display = 'none';
+            if(e.target.id !== 'prestec-llibre-search') document.getElementById('suggeriments-llibre').style.display = 'none';
+        });
+
+        // --- GESTIÓ DE PRÉSTECS ---
+        function renderPrestecs() {
+            const llista = document.getElementById('lista-prestecs');
+            const cerca = document.getElementById('search-prestecs').value.toLowerCase();
+            llista.innerHTML = '';
+
+            // Només es mostren els préstecs actius (!p.fi)
+            let actius = db.prestecs.map((p, i) => ({...p, originalIndex: i})).filter(p => !p.fi);
+
+            actius.forEach(p => {
+                const alumneNom = db.alumnos[p.al] ? db.alumnos[p.al].n : "Desconegut";
+                const llibreTitol = db.libres[p.ll] ? db.libres[p.ll].t : "Desconegut";
+
+                if(alumneNom.toLowerCase().includes(cerca) || llibreTitol.toLowerCase().includes(cerca)) {
+                    const row = document.createElement('div');
+                    row.className = 'item-row prestat';
+                    row.innerHTML = `
+                        <div class="item-info">
+                            <h4>${llibreTitol}</h4>
+                            <p><i class="fa-solid fa-user"></i> Prestat a: <strong>${alumneNom}</strong></p>
+                            <p><i class="fa-solid fa-calendar-days"></i> Data d'inici: ${p.in || 'N/A'}</p>
+                        </div>
+                        <div class="item-actions">
+                            <button class="btn btn-success" style="padding: 6px 12px; font-size:0.85rem;" onclick="retornarPrestec(${p.originalIndex})">
+                                <i class="fa-solid fa-check"></i> Rebut / Retornat
+                            </button>
+                        </div>
+                    `;
+                    llista.appendChild(row);
+                }
+            });
+        }
+
+        function guardarPrestec() {
+            const alIdx = document.getElementById('prestec-alumne-seleccionat').value;
+            const llIdx = document.getElementById('prestec-llibre-seleccionat').value;
+
+            if(!alIdx || !llIdx) return alert("Si us plau, busca i selecciona un alumne i un llibre dels suggeriments");
+
+            const avui = new Date().toLocaleDateString('ca-ES');
+            const nouPrestec = {
+                al: parseInt(alIdx),
+                ll: parseInt(llIdx),
+                in: avui,
+                fi: ""
+            };
+
+            db.prestecs.push(nouPrestec);
+            enviarServidor('create', 'prestec', nouPrestec);
+            desarDadesLocals();
+
+            // Netejar camps i selectors
+            document.getElementById('prestec-alumne-seleccionat').value = '';
+            document.getElementById('prestec-llibre-seleccionat').value = '';
+            document.getElementById('badge-alumne').style.display = 'none';
+            document.getElementById('badge-llibre').style.display = 'none';
+
+            renderPrestecs();
+        }
+
+        function retornarPrestec(idx) {
+            const avui = new Date().toLocaleDateString('ca-ES');
+            db.prestecs[idx].fi = avui;
+            enviarServidor('update', 'prestec', { index: idx, ...db.prestecs[idx] });
+            desarDadesLocals();
+            renderPrestecs();
         }
     </script>
 </body>
